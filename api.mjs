@@ -46,11 +46,17 @@ app.post('/api/auth/login', (req, res) => {
   res.json({ token: process.env.ADMIN_TOKEN });
 });
 
+// ─── Timezone helper ──────────────────────────────────────────────────────────
+
+function todayMX() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+}
+
 // ─── Today's status & pipeline ────────────────────────────────────────────────
 
 app.get('/api/today', requireAuth, async (req, res) => {
   try {
-    const today = new Date().toISOString().split('T')[0];
+    const today = todayMX();
 
     const { data: logs, error } = await supabase
       .from('meal_logs')
@@ -131,7 +137,7 @@ app.post('/api/logs', requireAuth, async (req, res) => {
 
     // Pipeline enforcement: for desayuno/comida/cena, check sequence
     if (PIPELINE_ORDER.includes(meal_type)) {
-      const today = date || new Date().toISOString().split('T')[0];
+      const today = date || todayMX();
       const { data: existing } = await supabase
         .from('meal_logs')
         .select('meal_type')
@@ -157,7 +163,7 @@ app.post('/api/logs', requireAuth, async (req, res) => {
         input_type: input_type || 'manual',
         description,
         gpt_analysis,
-        date: date || new Date().toISOString().split('T')[0],
+        date: date || todayMX(),
         logged_at: new Date().toISOString(),
       })
       .select()
@@ -425,9 +431,8 @@ app.get('/api/stats/streak', requireAuth, async (req, res) => {
 
     // Current streak: count consecutive days ending today or yesterday
     let streak = 0;
-    const today     = new Date();
-    const todayStr  = today.toISOString().split('T')[0];
-    const yestStr   = new Date(today - 86400000).toISOString().split('T')[0];
+    const todayStr  = todayMX();
+    const yestStr   = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date(Date.now() - 86400000));
 
     // Allow streak if today is complete OR yesterday was the last complete day
     let cursor = completeDates[0] === todayStr || completeDates[0] === yestStr ? completeDates[0] : null;
@@ -474,9 +479,8 @@ app.get('/api/stats/streak', requireAuth, async (req, res) => {
 // Weekly summary (last 7 days)
 app.get('/api/stats/week', requireAuth, async (req, res) => {
   try {
-    const today = new Date();
-    const from  = new Date(today - 6 * 86400000).toISOString().split('T')[0];
-    const to    = today.toISOString().split('T')[0];
+    const to   = todayMX();
+    const from = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date(Date.now() - 6 * 86400000));
 
     // Reuse daily stats logic
     const fakeReq = { query: { from, to }, headers: req.headers };
@@ -540,7 +544,7 @@ app.post('/api/weight', requireAuth, async (req, res) => {
 
     const { data, error } = await supabase
       .from('weight_logs')
-      .insert({ weight_kg, date: date || new Date().toISOString().split('T')[0] })
+      .insert({ weight_kg, date: date || todayMX() })
       .select()
       .single();
 

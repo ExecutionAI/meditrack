@@ -1037,6 +1037,10 @@ let audioBlob       = null;
 let pendingAnalysis = null;  // { portions, confidence, notes, identified_foods }
 let pendingDeleteId = null;
 
+function todayMX() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+}
+
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 async function doLogin(e) {
   e.preventDefault();
@@ -1595,12 +1599,10 @@ function renderStreakCard(streak, week) {
 }
 
 function renderWeekChart(week) {
-  const today = new Date().toISOString().split('T')[0];
+  const today = todayMX();
   const days7 = [];
   for (let i = 6; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    days7.push(d.toISOString().split('T')[0]);
+    days7.push(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date(Date.now() - i * 86400000)));
   }
   const DAY_LABELS = ['D','L','M','X','J','V','S'];
 
@@ -1685,9 +1687,9 @@ function renderHistory(logs) {
 
 async function loadMonthlySummary() {
   try {
-    const now = new Date();
-    const from = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
-    const to   = now.toISOString().split('T')[0];
+    const todayStr = todayMX();
+    const from = todayStr.substring(0, 7) + '-01';
+    const to   = todayStr;
     const data = await api(`/api/stats/daily?from=${from}&to=${to}`);
     const el   = document.getElementById('monthly-summary');
     const total = data.length;
