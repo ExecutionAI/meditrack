@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1C3A2B">
+<title>MediTrack — Héctor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Variables ─────────────────────────────────────────────────────── */
+  :root {
+    --bg:        #FDF6EE;
+    --bg2:       #F5EDE0;
+    --surface:   #FFFFFF;
+    --green:     #1C3A2B;
+    --green-mid: #2C5F2E;
+    --green-lt:  #4A8C52;
+    --accent:    #E8734A;
+    --gold:      #D4A843;
+    --gold-lt:   #F5C842;
+    --red:       #C0392B;
+    --muted:     #8A8070;
+    --text:      #1A1408;
+    --text2:     #5C5040;
+    --border:    #E8DDD0;
+    --shadow:    0 2px 12px rgba(28,58,43,0.10), 0 1px 3px rgba(28,58,43,0.06);
+    --shadow-lg: 0 8px 32px rgba(28,58,43,0.14), 0 2px 8px rgba(28,58,43,0.08);
+    --r:         16px;
+    --r-sm:      10px;
+    --tab-h:     64px;
+    --safe-b:    env(safe-area-inset-bottom, 0px);
+  }
+
+  /* ── Reset ─────────────────────────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { height: 100%; background: var(--green); }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    max-width: 430px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+  h1,h2,h3,h4 { font-family: 'Fraunces', serif; font-weight: 600; line-height: 1.2; }
+  button { cursor: pointer; border: none; background: none; font-family: inherit; }
+  input, textarea { font-family: inherit; }
+
+  /* ── Login Screen ──────────────────────────────────────────────────── */
+  #login-screen {
+    position: fixed; inset: 0; z-index: 100;
+    background: var(--green);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px 24px;
+    gap: 0;
+  }
+  .login-leaf {
+    width: 72px; height: 72px; margin-bottom: 24px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+  }
+  .login-leaf span { transform: rotate(45deg); display: block; }
+  .login-title {
+    font-family: 'Fraunces', serif;
+    font-size: 36px; color: #fff; letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+  .login-sub { color: rgba(255,255,255,0.5); font-size: 14px; margin-bottom: 40px; }
+  .login-form { width: 100%; max-width: 320px; display: flex; flex-direction: column; gap: 12px; }
+  .login-input {
+    width: 100%; padding: 16px 20px;
+    background: rgba(255,255,255,0.10);
+    border: 1.5px solid rgba(255,255,255,0.18);
+    border-radius: var(--r);
+    color: #fff; font-size: 16px;
+    outline: none; transition: border-color .2s;
+  }
+  .login-input::placeholder { color: rgba(255,255,255,0.35); }
+  .login-input:focus { border-color: rgba(255,255,255,0.5); }
+  .login-btn {
+    padding: 16px; background: var(--accent);
+    border-radius: var(--r); color: #fff;
+    font-size: 16px; font-weight: 600; letter-spacing: .3px;
+    transition: transform .15s, opacity .15s;
+  }
+  .login-btn:active { transform: scale(0.97); opacity: .9; }
+  .login-error { color: #FFAA88; font-size: 13px; text-align: center; min-height: 18px; }
+
+  /* ── App Shell ─────────────────────────────────────────────────────── */
+  #app { display: none; min-height: 100dvh; padding-bottom: calc(var(--tab-h) + var(--safe-b) + 8px); }
+  #app.visible { display: block; }
+
+  /* ── Tab Bar ───────────────────────────────────────────────────────── */
+  .tab-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 430px;
+    height: calc(var(--tab-h) + var(--safe-b));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: flex-start; padding-top: 8px;
+    padding-bottom: var(--safe-b);
+    z-index: 50;
+    box-shadow: 0 -4px 20px rgba(28,58,43,0.08);
+  }
+  .tab-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 3px; padding: 4px 0;
+    color: var(--muted); transition: color .2s;
+    font-size: 10px; font-weight: 500; letter-spacing: .3px;
+  }
+  .tab-btn .tab-icon { font-size: 22px; line-height: 1; }
+  .tab-btn.active { color: var(--green-mid); }
+  .tab-btn.active .tab-icon { filter: drop-shadow(0 0 6px rgba(44,95,46,0.4)); }
+
+  /* ── Screen ────────────────────────────────────────────────────────── */
+  .screen { display: none; animation: fadeUp .25s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Shared Header ─────────────────────────────────────────────────── */
+  .screen-header {
+    background: var(--green);
+    padding: 52px 24px 24px;
+    position: relative; overflow: hidden;
+  }
+  .screen-header::after {
+    content: '';
+    position: absolute; bottom: -40px; right: -30px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .header-eyebrow { font-size: 11px; color: rgba(255,255,255,0.45); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .header-title { font-family: 'Fraunces', serif; font-size: 28px; color: #fff; letter-spacing: -.5px; }
+  .header-sub { font-size: 13px; color: rgba(255,255,255,0.55); margin-top: 2px; }
+
+  /* ── Cards ─────────────────────────────────────────────────────────── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--r);
+    box-shadow: var(--shadow);
+    padding: 20px;
+    margin: 0 16px 12px;
+  }
+  .card-label {
+    font-size: 10px; font-weight: 600; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 12px;
+  }
+
+  /* ── ═══════════════════════ INICIO TAB ═══════════════════════ ──── */
+
+  /* Pipeline bar */
+  .pipeline-wrap {
+    background: var(--green);
+    padding: 0 24px 28px;
+  }
+  .pipeline {
+    display: flex; align-items: center; gap: 0;
+  }
+  .pipeline-step {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .pipeline-dot {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    transition: all .3s;
+  }
+  .pipeline-dot.done {
+    background: rgba(255,255,255,0.15);
+    box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
+  }
+  .pipeline-dot.done::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px; right: -2px;
+    background: var(--gold);
+    color: var(--green);
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    font-size: 9px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pipeline-dot { position: relative; }
+  .pipeline-dot.active {
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(232,115,74,0.3), 0 4px 16px rgba(232,115,74,0.4);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  .pipeline-dot.pending {
+    background: rgba(255,255,255,0.08);
+    border: 2px dashed rgba(255,255,255,0.2);
+  }
+  @keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 0 4px rgba(232,115,74,0.3), 0 4px 16px rgba(232,115,74,0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(232,115,74,0.15), 0 4px 20px rgba(232,115,74,0.5); }
+  }
+  .pipeline-label { font-size: 10px; color: rgba(255,255,255,0.55); font-weight: 500; }
+  .pipeline-label.active { color: #fff; font-weight: 600; }
+  .pipeline-connector {
+    flex: 0 0 24px; height: 2px;
+    background: rgba(255,255,255,0.15);
+    margin-bottom: 20px;
+  }
+  .pipeline-connector.done { background: rgba(255,255,255,0.4); }
+
+  /* Streak pill */
+  .streak-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.10);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px; padding: 6px 14px 6px 10px;
+    width: fit-content; margin-left: auto;
+    margin-bottom: 16px;
+  }
+  .streak-flame { font-size: 18px; }
+  .streak-text { color: #fff; font-size: 13px; font-weight: 600; }
+  .streak-sub  { color: rgba(255,255,255,0.5); font-size: 11px; }
+
+  /* Next meal card */
+  .next-meal-card {
+    background: var(--surface);
+    border-radius: var(--r) var(--r) 0 0;
+    margin: -16px 0 0;
+    padding: 24px 20px 16px;
+    position: relative; z-index: 2;
+  }
+  .next-meal-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent); color: #fff;
+    border-radius: 100px; padding: 4px 12px;
+    font-size: 11px; font-weight: 600; letter-spacing: .5px;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .next-meal-name {
+    font-family: 'Fraunces', serif;
+    font-size: 32px; letter-spacing: -1px; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .next-meal-time { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+  /* Food group chips */
+  .group-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  }
+  .group-chip {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border-radius: var(--r-sm);
+    padding: 10px 12px; border: 1.5px solid var(--border);
+    transition: border-color .2s, background .2s;
+  }
+  .group-chip.done { background: #EAF4EB; border-color: #A8D5AC; }
+  .group-chip.over { background: #FFF3F0; border-color: #FFBCA8; }
+  .group-chip-icon { font-size: 20px; flex-shrink: 0; }
+  .group-chip-info { flex: 1; min-width: 0; }
+  .group-chip-name { font-size: 11px; font-weight: 600; color: var(--text2); }
+  .group-chip-count {
+    font-family: 'Fraunces', serif;
+    font-size: 18px; color: var(--text); line-height: 1;
+  }
+  .group-chip-count span { font-size: 11px; color: var(--muted); font-family: 'DM Sans', sans-serif; }
+  .group-chip-check { font-size: 16px; }
+
+  /* Log button */
+  .log-btn {
+    width: 100%; padding: 16px;
+    background: var(--green);
+    color: #fff; border-radius: var(--r);
+    font-size: 16px; font-weight: 600;
+    margin-top: 16px;
+    transition: transform .15s, opacity .15s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .log-btn:active { transform: scale(0.98); opacity: .9; }
+  .log-btn.completed { background: var(--gold); color: var(--green); }
+
+  /* Meal selector tabs */
+  .meal-tabs {
+    display: flex; gap: 8px; padding: 16px 16px 0;
+    overflow-x: auto; scrollbar-width: none;
+  }
+  .meal-tabs::-webkit-scrollbar { display: none; }
+  .meal-tab {
+    flex-shrink: 0; padding: 8px 14px;
+    border-radius: 100px;
+    font-size: 12px; font-weight: 600;
+    background: var(--bg2); color: var(--muted);
+    border: 1.5px solid transparent;
+    transition: all .2s;
+  }
+  .meal-tab.active {
+    background: var(--green); color: #fff;
+  }
+  .meal-tab.done-tab { border-color: var(--green-lt); color: var(--green-lt); background: #EAF4EB; }
+
+  /* Today summary strip */
+  .today-compliance {
+    margin: 0 16px 12px;
+    background: var(--green);
+    border-radius: var(--r);
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+    color: #fff;
+  }
+  .compliance-ring {
+    width: 56px; height: 56px; flex-shrink: 0;
+    position: relative;
+  }
+  .compliance-ring svg { transform: rotate(-90deg); }
+  .compliance-ring .ring-pct {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 15px; font-weight: 700; color: #fff;
+  }
+  .compliance-info { flex: 1; }
+  .compliance-label { font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 2px; }
+  .compliance-val { font-family: 'Fraunces', serif; font-size: 20px; }
+  .compliance-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+  /* ── ═══════════════════════ REGISTRAR TAB ═══════════════════════ ── */
+  .reg-wrap { padding: 16px 16px 0; }
+
+  /* Meal type selector */
+  .meal-type-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .meal-type-btn {
+    flex: 1; padding: 12px 8px;
+    border-radius: var(--r-sm);
+    background: var(--bg2);
+    border: 2px solid transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: all .2s;
+  }
+  .meal-type-btn .mt-icon { font-size: 24px; }
+  .meal-type-btn .mt-label { font-size: 10px; font-weight: 600; color: var(--muted); }
+  .meal-type-btn.selected { background: var(--green); border-color: var(--green-lt); }
+  .meal-type-btn.selected .mt-label { color: rgba(255,255,255,0.7); }
+  .meal-type-btn.locked { opacity: .45; cursor: not-allowed; }
+  .meal-type-btn.done-m { background: #EAF4EB; border-color: #A8D5AC; }
+  .meal-type-btn.done-m .mt-label { color: var(--green-mid); }
+
+  /* Input method cards */
+  .input-methods {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
+    margin-bottom: 16px;
+  }
+  .input-card {
+    background: var(--surface); border-radius: var(--r);
+    border: 2px solid var(--border);
+    padding: 18px 14px; text-align: center;
+    box-shadow: var(--shadow);
+    transition: all .2s; cursor: pointer;
+  }
+  .input-card:active { transform: scale(0.97); }
+  .input-card.selected { border-color: var(--accent); background: #FFF4EF; }
+  .input-card-icon { font-size: 32px; margin-bottom: 8px; display: block; }
+  .input-card-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .input-card-sub { font-size: 11px; color: var(--muted); }
+
+  /* Input area */
+  .input-area { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden; }
+  .input-area-inner { padding: 16px; }
+
+  /* Image preview */
+  .img-preview-wrap {
+    width: 100%; aspect-ratio: 4/3;
+    background: var(--bg2); border-radius: var(--r-sm);
+    overflow: hidden; position: relative; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center;
+    border: 2px dashed var(--border);
+  }
+  .img-preview-wrap img { width: 100%; height: 100%; object-fit: cover; }
+  .img-preview-placeholder { text-align: center; color: var(--muted); }
+  .img-preview-placeholder span { font-size: 40px; display: block; margin-bottom: 8px; }
+  .img-preview-placeholder p { font-size: 12px; }
+  .img-btn {
+    width: 100%; padding: 14px;
+    border-radius: var(--r-sm);
+    background: var(--green); color: #fff;
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity .2s;
+  }
+  .img-btn:active { opacity: .85; }
+  .img-btn.secondary { background: var(--bg2); color: var(--text); margin-top: 8px; }
+
+  /* Voice recorder */
+  .voice-recorder { text-align: center; padding: 8px 0; }
+  .record-btn {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    font-size: 32px; margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 20px rgba(232,115,74,0.4);
+    transition: all .2s;
+  }
+  .record-btn.recording {
+    background: var(--red);
+    animation: record-pulse 1s ease-in-out infinite;
+    box-shadow: 0 4px 20px rgba(192,57,43,0.5);
+  }
+  .record-btn:active { transform: scale(0.95); }
+  @keyframes record-pulse {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+  }
+  .record-status { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+  .record-timer { font-family: 'Fraunces', serif; font-size: 32px; color: var(--text); }
+  .transcript-box {
+    background: var(--bg); border-radius: var(--r-sm);
+    border: 1px solid var(--border); padding: 12px;
+    font-size: 13px; color: var(--text2); line-height: 1.5;
+    min-height: 60px; margin-top: 12px;
+    font-style: italic;
+  }
+
+  /* Manual text input */
+  .text-input-area {
+    width: 100%; min-height: 100px; padding: 14px;
+    border: 1.5px solid var(--border); border-radius: var(--r-sm);
+    font-size: 14px; color: var(--text); background: var(--bg);
+    resize: none; outline: none; transition: border-color .2s;
+  }
+  .text-input-area:focus { border-color: var(--green-lt); }
+  .text-input-area::placeholder { color: var(--muted); }
+
+  /* Analyze button */
+  .analyze-btn {
+    width: 100%; padding: 15px;
+    background: var(--accent); color: #fff;
+    border-radius: var(--r-sm); font-size: 15px; font-weight: 600;
+    margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity .2s, transform .15s;
+  }
+  .analyze-btn:active { opacity: .9; transform: scale(0.98); }
+  .analyze-btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
+
+  /* Analysis result */
+  .analysis-result {
+    background: var(--surface); border-radius: var(--r);
+    box-shadow: var(--shadow); margin-top: 12px; overflow: hidden;
+  }
+  .analysis-header {
+    background: var(--bg2); padding: 14px 16px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .analysis-title { font-size: 13px; font-weight: 600; }
+  .confidence-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 100px;
+  }
+  .confidence-badge.alta { background: #D4EDDA; color: #1C5E2A; }
+  .confidence-badge.media { background: #FFF3CD; color: #856404; }
+  .confidence-badge.baja { background: #F8D7DA; color: #842029; }
+  .portions-editor { padding: 14px 16px; }
+  .portion-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .portion-row:last-child { border-bottom: none; }
+  .portion-icon { font-size: 20px; width: 28px; text-align: center; }
+  .portion-label { flex: 1; font-size: 13px; font-weight: 500; }
+  .portion-stepper { display: flex; align-items: center; gap: 10px; }
+  .stepper-btn {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--bg2); color: var(--text);
+    font-size: 18px; display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .stepper-btn:active { background: var(--border); }
+  .stepper-val {
+    font-family: 'Fraunces', serif;
+    font-size: 20px; width: 28px; text-align: center;
+  }
+  .stepper-plan { font-size: 10px; color: var(--muted); text-align: center; }
+
+  /* Save button */
+  .save-btn {
+    width: 100%; padding: 16px;
+    background: var(--green); color: #fff;
+    border-radius: var(--r); font-size: 16px; font-weight: 600;
+    margin-top: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 16px rgba(28,58,43,0.25);
+    transition: transform .15s, opacity .15s;
+  }
+  .save-btn:active { transform: scale(0.98); opacity: .9; }
+
+  /* Loading spinner */
+  .spinner {
+    width: 20px; height: 20px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    animation: spin .7s linear infinite;
+    display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── ═══════════════════════ PROGRESO TAB ═══════════════════════ ─── */
+  .prog-wrap { padding: 16px 16px 0; }
+
+  /* Period tabs */
+  .period-tabs {
+    display: flex; gap: 6px; margin-bottom: 16px;
+    background: var(--bg2); border-radius: 100px; padding: 4px;
+  }
+  .period-tab {
+    flex: 1; padding: 8px;
+    border-radius: 100px; font-size: 12px; font-weight: 600;
+    color: var(--muted); transition: all .2s; text-align: center;
+  }
+  .period-tab.active { background: var(--surface); color: var(--green); box-shadow: var(--shadow); }
+
+  /* Streak card */
+  .streak-card {
+    background: linear-gradient(135deg, var(--green) 0%, var(--green-mid) 100%);
+    border-radius: var(--r); padding: 20px;
+    margin-bottom: 12px; color: #fff; position: relative; overflow: hidden;
+  }
+  .streak-card::before {
+    content: '🔥';
+    position: absolute; right: 20px; top: 50%; transform: translateY(-50%);
+    font-size: 64px; opacity: .15;
+  }
+  .streak-card-label { font-size: 10px; color: rgba(255,255,255,0.5); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .streak-card-num {
+    font-family: 'Fraunces', serif;
+    font-size: 56px; letter-spacing: -2px; line-height: 1;
+    margin-bottom: 2px;
+  }
+  .streak-card-sub { font-size: 13px; color: rgba(255,255,255,0.6); }
+  .streak-badges { display: flex; gap: 12px; margin-top: 16px; }
+  .streak-badge-item {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .streak-badge-val { font-family: 'Fraunces', serif; font-size: 20px; }
+  .streak-badge-lbl { font-size: 10px; color: rgba(255,255,255,0.5); }
+
+  /* Week chart */
+  .week-chart { background: var(--surface); border-radius: var(--r); padding: 16px 20px; margin-bottom: 12px; box-shadow: var(--shadow); }
+  .week-chart-title { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .week-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+  .week-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .week-bar {
+    width: 100%; border-radius: 6px 6px 0 0;
+    background: var(--border); position: relative; min-height: 4px;
+    transition: height .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  .week-bar.filled { background: var(--green-lt); }
+  .week-bar.perfect { background: var(--green); }
+  .week-bar.today { background: var(--accent); }
+  .week-bar-pct { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 600; color: var(--text2); white-space: nowrap; }
+  .week-bar-day { font-size: 10px; color: var(--muted); font-weight: 500; }
+  .week-bar-day.today { color: var(--accent); font-weight: 700; }
+
+  /* Group progress bars */
+  .group-progress { background: var(--surface); border-radius: var(--r); padding: 16px 20px; box-shadow: var(--shadow); margin-bottom: 12px; }
+  .gp-row { margin-bottom: 14px; }
+  .gp-row:last-child { margin-bottom: 0; }
+  .gp-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .gp-name { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+  .gp-count { font-size: 11px; color: var(--muted); }
+  .gp-bar { height: 8px; background: var(--bg2); border-radius: 100px; overflow: hidden; }
+  .gp-fill {
+    height: 100%; border-radius: 100px;
+    background: var(--green-lt);
+    transition: width .5s cubic-bezier(.34,1.56,.64,1);
+  }
+  .gp-fill.over { background: var(--accent); }
+  .gp-fill.perfect { background: var(--gold); }
+
+  /* History list */
+  .history-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .history-item {
+    background: var(--surface); border-radius: var(--r-sm);
+    padding: 14px 16px; box-shadow: var(--shadow);
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .history-icon {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--bg2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .history-content { flex: 1; min-width: 0; }
+  .history-meal { font-size: 13px; font-weight: 600; }
+  .history-desc { font-size: 11px; color: var(--muted); margin: 2px 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .history-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .history-chip { font-size: 10px; background: var(--bg2); color: var(--text2); padding: 2px 7px; border-radius: 100px; }
+  .history-time { font-size: 11px; color: var(--muted); flex-shrink: 0; }
+  .history-delete { background: none; font-size: 18px; color: var(--muted); padding: 2px; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: calc(var(--tab-h) + var(--safe-b) + 16px);
+    left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--text); color: #fff;
+    padding: 10px 20px; border-radius: 100px;
+    font-size: 13px; font-weight: 500;
+    z-index: 200; opacity: 0; transition: all .3s;
+    white-space: nowrap; pointer-events: none;
+    max-width: calc(100% - 32px); text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--green-mid); }
+  .toast.error   { background: var(--red); }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 150;
+    background: rgba(28,58,43,0.6); backdrop-filter: blur(4px);
+    display: flex; align-items: flex-end; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity .3s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal-sheet {
+    background: var(--surface); border-radius: var(--r) var(--r) 0 0;
+    padding: 20px 20px calc(20px + var(--safe-b));
+    width: 100%; max-width: 430px;
+    transform: translateY(100%); transition: transform .3s cubic-bezier(.34,1.1,.64,1);
+  }
+  .modal-overlay.open .modal-sheet { transform: translateY(0); }
+  .modal-handle { width: 36px; height: 4px; background: var(--border); border-radius: 100px; margin: 0 auto 20px; }
+  .modal-title { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 8px; }
+  .modal-text { font-size: 14px; color: var(--text2); line-height: 1.5; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; }
+  .modal-cancel { flex: 1; padding: 14px; background: var(--bg2); border-radius: var(--r-sm); font-size: 14px; font-weight: 600; color: var(--muted); }
+  .modal-confirm { flex: 1; padding: 14px; background: var(--red); border-radius: var(--r-sm); font-size: 14px; font-weight: 600; color: #fff; }
+
+  /* Completed day banner */
+  .completed-banner {
+    background: linear-gradient(135deg, #1C3A2B, #2C5F2E);
+    border-radius: var(--r); padding: 20px;
+    text-align: center; color: #fff; margin: 0 0 12px;
+  }
+  .completed-banner .check-circle {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--gold); margin: 0 auto 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+  }
+  .completed-banner h3 { font-family: 'Fraunces', serif; font-size: 22px; margin-bottom: 4px; }
+  .completed-banner p { font-size: 13px; color: rgba(255,255,255,0.6); }
+
+  /* Utility */
+  .hidden { display: none !important; }
+  .mt-8  { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .section-pad { padding: 16px 0 0; }
+  .empty-state { text-align: center; padding: 32px 20px; color: var(--muted); }
+  .empty-state span { font-size: 40px; display: block; margin-bottom: 8px; }
+  .empty-state p { font-size: 13px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ LOGIN ═══════════════════ -->
+<div id="login-screen">
+  <div class="login-leaf"><span>🌿</span></div>
+  <h1 class="login-title">MediTrack</h1>
+  <p class="login-sub">Plan de alimentación · Héctor</p>
+  <form class="login-form" onsubmit="doLogin(event)">
+    <input class="login-input" type="password" id="login-pwd" placeholder="Contraseña" autocomplete="current-password" required>
+    <button class="login-btn" type="submit">Entrar</button>
+    <p class="login-error" id="login-err"></p>
+  </form>
+</div>
+
+<!-- ═══════════════════ APP ══════════════════════ -->
+<div id="app">
+
+  <!-- INICIO -->
+  <div class="screen active" id="screen-inicio">
+    <div class="screen-header">
+      <p class="header-eyebrow" id="today-date-label">Hoy, lunes</p>
+      <h1 class="header-title">Buenos días, Héctor</h1>
+      <p class="header-sub" id="header-sub-text">Veamos cómo va tu día</p>
+    </div>
+
+    <div class="pipeline-wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <p style="font-size:11px;color:rgba(255,255,255,0.45);letter-spacing:1px;text-transform:uppercase">Tu progreso</p>
+        <div class="streak-pill" id="streak-pill">
+          <span class="streak-flame">🔥</span>
+          <div><div class="streak-text" id="streak-num">0 días</div><div class="streak-sub">racha</div></div>
+        </div>
+      </div>
+      <div class="pipeline" id="pipeline">
+        <div class="pipeline-step">
+          <div class="pipeline-dot pending" id="pdot-desayuno">🌅</div>
+          <div class="pipeline-label" id="plabel-desayuno">Desayuno</div>
+        </div>
+        <div class="pipeline-connector" id="pcon-1"></div>
+        <div class="pipeline-step">
+          <div class="pipeline-dot pending" id="pdot-comida">☀️</div>
+          <div class="pipeline-label" id="plabel-comida">Comida</div>
+        </div>
+        <div class="pipeline-connector" id="pcon-2"></div>
+        <div class="pipeline-step">
+          <div class="pipeline-dot pending" id="pdot-cena">🌙</div>
+          <div class="pipeline-label" id="plabel-cena">Cena</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meal detail tabs -->
+    <div class="meal-tabs" id="inicio-meal-tabs">
+      <button class="meal-tab active" onclick="selectViewMeal('desayuno')" id="itab-desayuno">🌅 Desayuno</button>
+      <button class="meal-tab" onclick="selectViewMeal('comida')" id="itab-comida">☀️ Comida</button>
+      <button class="meal-tab" onclick="selectViewMeal('cena')" id="itab-cena">🌙 Cena</button>
+      <button class="meal-tab" onclick="selectViewMeal('colacion')" id="itab-colacion">🍎 Colación</button>
+    </div>
+
+    <div class="next-meal-card" id="next-meal-card">
+      <div id="next-meal-tag-wrap">
+        <span class="next-meal-tag" id="next-meal-tag">⬆ Siguiente</span>
+      </div>
+      <h2 class="next-meal-name" id="view-meal-name">Desayuno</h2>
+      <p class="next-meal-time" id="view-meal-time">7:00 – 10:00 am</p>
+
+      <div class="group-grid" id="group-grid"></div>
+
+      <button class="log-btn" id="log-btn" onclick="goToRegister()">
+        <span>➕</span> Registrar Desayuno
+      </button>
+    </div>
+
+    <div class="today-compliance card" id="today-compliance-card" style="display:none">
+      <div class="compliance-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="5"/>
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#F5C842" stroke-width="5"
+            stroke-dasharray="138.2" stroke-dashoffset="138.2"
+            stroke-linecap="round" id="compliance-circle" style="transition:stroke-dashoffset .6s ease"/>
+        </svg>
+        <div class="ring-pct" id="compliance-pct">0%</div>
+      </div>
+      <div class="compliance-info">
+        <div class="compliance-label">Cumplimiento del día</div>
+        <div class="compliance-val" id="compliance-val">0%</div>
+        <div class="compliance-sub" id="compliance-sub">Registra tus comidas</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRAR -->
+  <div class="screen" id="screen-registrar">
+    <div class="screen-header">
+      <p class="header-eyebrow">Registrar</p>
+      <h1 class="header-title">¿Qué comiste?</h1>
+      <p class="header-sub">Elige el tipo de registro</p>
+    </div>
+
+    <div class="reg-wrap">
+      <!-- Step 1: Meal type -->
+      <p class="card-label" style="padding:0 0 8px">Tiempo de comida</p>
+      <div class="meal-type-row" id="reg-meal-types">
+        <button class="meal-type-btn" onclick="selectRegMeal('desayuno')" id="rmt-desayuno">
+          <span class="mt-icon">🌅</span><span class="mt-label">Desayuno</span>
+        </button>
+        <button class="meal-type-btn" onclick="selectRegMeal('comida')" id="rmt-comida">
+          <span class="mt-icon">☀️</span><span class="mt-label">Comida</span>
+        </button>
+        <button class="meal-type-btn" onclick="selectRegMeal('cena')" id="rmt-cena">
+          <span class="mt-icon">🌙</span><span class="mt-label">Cena</span>
+        </button>
+        <button class="meal-type-btn" onclick="selectRegMeal('colacion')" id="rmt-colacion">
+          <span class="mt-icon">🍎</span><span class="mt-label">Colación</span>
+        </button>
+      </div>
+
+      <!-- Step 2: Input method -->
+      <p class="card-label" style="padding:0 0 8px">Cómo describirlo</p>
+      <div class="input-methods">
+        <div class="input-card" onclick="selectInputMethod('foto_menu')" id="im-foto_menu">
+          <span class="input-card-icon">📋</span>
+          <div class="input-card-title">Foto del menú</div>
+          <div class="input-card-sub">Foto del menú o descripción</div>
+        </div>
+        <div class="input-card" onclick="selectInputMethod('foto_comida')" id="im-foto_comida">
+          <span class="input-card-icon">📸</span>
+          <div class="input-card-title">Foto de la comida</div>
+          <div class="input-card-sub">Toma o sube una foto</div>
+        </div>
+        <div class="input-card" onclick="selectInputMethod('voz')" id="im-voz">
+          <span class="input-card-icon">🎙️</span>
+          <div class="input-card-title">Nota de voz</div>
+          <div class="input-card-sub">Describe con tu voz</div>
+        </div>
+        <div class="input-card" onclick="selectInputMethod('manual')" id="im-manual">
+          <span class="input-card-icon">✏️</span>
+          <div class="input-card-title">Texto manual</div>
+          <div class="input-card-sub">Escribe lo que comiste</div>
+        </div>
+      </div>
+
+      <!-- Step 3: Input area (dynamic) -->
+      <div id="input-area-wrap" class="hidden">
+        <!-- Foto menú -->
+        <div id="ia-foto_menu" class="input-area hidden">
+          <div class="input-area-inner">
+            <div class="img-preview-wrap" id="menu-preview-wrap">
+              <div class="img-preview-placeholder"><span>📋</span><p>Toca para subir foto del menú</p></div>
+            </div>
+            <input type="file" id="menu-file-input" accept="image/*" style="display:none" onchange="handleImageFile(event,'menu')">
+            <button class="img-btn" onclick="document.getElementById('menu-file-input').click()">📷 Seleccionar foto</button>
+            <div class="mt-8">
+              <textarea class="text-input-area" id="menu-extra-text" rows="2" placeholder="Descripción adicional (opcional)..."></textarea>
+            </div>
+            <button class="analyze-btn" id="analyze-menu-btn" onclick="analyzeImage('menu')" disabled>
+              <span class="spinner hidden" id="menu-spinner"></span>
+              <span id="menu-btn-text">✨ Analizar menú</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Foto comida -->
+        <div id="ia-foto_comida" class="input-area hidden">
+          <div class="input-area-inner">
+            <div class="img-preview-wrap" id="food-preview-wrap">
+              <div class="img-preview-placeholder"><span>📸</span><p>Toma o sube una foto de tu comida</p></div>
+            </div>
+            <input type="file" id="food-file-input" accept="image/*" capture="environment" style="display:none" onchange="handleImageFile(event,'food')">
+            <button class="img-btn" onclick="document.getElementById('food-file-input').click()">📷 Tomar / subir foto</button>
+            <div class="mt-8">
+              <textarea class="text-input-area" id="food-extra-text" rows="2" placeholder="¿Algo más que agregar? (opcional)..."></textarea>
+            </div>
+            <button class="analyze-btn" id="analyze-food-btn" onclick="analyzeImage('food')" disabled>
+              <span class="spinner hidden" id="food-spinner"></span>
+              <span id="food-btn-text">✨ Analizar foto</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Voz -->
+        <div id="ia-voz" class="input-area hidden">
+          <div class="input-area-inner">
+            <div class="voice-recorder">
+              <button class="record-btn" id="record-btn" onclick="toggleRecording()">🎙️</button>
+              <p class="record-status" id="record-status">Toca para grabar</p>
+              <div class="record-timer hidden" id="record-timer">0:00</div>
+            </div>
+            <div style="margin-top:8px;">
+              <p style="font-size:11px;color:var(--muted);text-align:center;margin-bottom:6px">— o adjunta una foto también —</p>
+              <input type="file" id="voice-img-input" accept="image/*" capture="environment" style="display:none" onchange="handleVoiceImage(event)">
+              <button class="img-btn secondary" onclick="document.getElementById('voice-img-input').click()" id="voice-add-photo-btn">📷 Agregar foto (opcional)</button>
+              <div class="img-preview-wrap hidden" id="voice-img-preview" style="margin-top:8px;height:80px;aspect-ratio:auto"></div>
+            </div>
+            <div class="transcript-box hidden" id="transcript-box">Transcripción aparecerá aquí...</div>
+            <button class="analyze-btn" id="analyze-voice-btn" onclick="analyzeVoice()" disabled>
+              <span class="spinner hidden" id="voice-spinner"></span>
+              <span id="voice-btn-text">✨ Analizar nota de voz</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Manual -->
+        <div id="ia-manual" class="input-area hidden">
+          <div class="input-area-inner">
+            <textarea class="text-input-area" id="manual-text" rows="5" placeholder="Describe lo que comiste, ej: 2 huevos revueltos, 3 tortillas de maíz, ensalada de lechuga con jitomate, 1 vaso de leche descremada..."></textarea>
+            <button class="analyze-btn" id="analyze-manual-btn" onclick="analyzeText()" disabled>
+              <span class="spinner hidden" id="manual-spinner"></span>
+              <span id="manual-btn-text">✨ Analizar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Analysis result + confirm -->
+      <div id="analysis-result-wrap" class="hidden">
+        <div class="analysis-result">
+          <div class="analysis-header">
+            <span class="analysis-title">Porciones detectadas</span>
+            <span class="confidence-badge" id="confidence-badge">—</span>
+          </div>
+          <div class="portions-editor" id="portions-editor"></div>
+        </div>
+        <div id="analysis-notes" class="hidden" style="font-size:12px;color:var(--muted);padding:8px 4px;line-height:1.5"></div>
+        <button class="save-btn" onclick="saveMealLog()">
+          <span>✅</span> Guardar comida
+        </button>
+        <button style="width:100%;padding:12px;text-align:center;font-size:13px;color:var(--muted);margin-top:4px" onclick="resetRegister()">
+          Cancelar y volver a empezar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROGRESO -->
+  <div class="screen" id="screen-progreso">
+    <div class="screen-header">
+      <p class="header-eyebrow">Seguimiento</p>
+      <h1 class="header-title">Tu progreso</h1>
+      <p class="header-sub" id="prog-sub">Semana actual</p>
+    </div>
+
+    <div class="prog-wrap">
+      <!-- Period tabs -->
+      <div class="period-tabs">
+        <button class="period-tab active" onclick="selectPeriod('semana')" id="pt-semana">Semana</button>
+        <button class="period-tab" onclick="selectPeriod('mes')" id="pt-mes">Mes</button>
+        <button class="period-tab" onclick="selectPeriod('historial')" id="pt-historial">Historial</button>
+      </div>
+
+      <div id="prog-semana">
+        <!-- Streak -->
+        <div class="streak-card" id="streak-card">
+          <div class="streak-card-label">Racha actual</div>
+          <div class="streak-card-num" id="sc-num">0</div>
+          <div class="streak-card-sub" id="sc-sub">días consecutivos completados</div>
+          <div class="streak-badges">
+            <div class="streak-badge-item">
+              <div class="streak-badge-val" id="sc-best">0</div>
+              <div class="streak-badge-lbl">🏆 mejor racha</div>
+            </div>
+            <div class="streak-badge-item">
+              <div class="streak-badge-val" id="sc-total">0</div>
+              <div class="streak-badge-lbl">✅ días completos</div>
+            </div>
+            <div class="streak-badge-item">
+              <div class="streak-badge-val" id="sc-avg">0%</div>
+              <div class="streak-badge-lbl">📊 promedio semana</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week bar chart -->
+        <div class="week-chart">
+          <div class="week-chart-title">Cumplimiento 7 días</div>
+          <div class="week-bars" id="week-bars">
+            <div class="empty-state" style="width:100%"><p>Cargando...</p></div>
+          </div>
+        </div>
+
+        <!-- Group compliance (today) -->
+        <div class="group-progress">
+          <p class="week-chart-title">Grupos hoy</p>
+          <div id="group-progress-list"></div>
+        </div>
+      </div>
+
+      <div id="prog-mes" class="hidden">
+        <div class="card">
+          <p class="card-label">Resumen mensual</p>
+          <div id="monthly-summary" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Cargando...</div>
+        </div>
+      </div>
+
+      <div id="prog-historial" class="hidden">
+        <p class="card-label" style="padding:0 0 8px">Últimas comidas</p>
+        <div class="history-list" id="history-list">
+          <div class="empty-state"><span>🍽️</span><p>No hay registros aún</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB BAR -->
+  <nav class="tab-bar">
+    <button class="tab-btn active" onclick="showTab('inicio')" id="tab-inicio">
+      <span class="tab-icon">🏠</span>
+      <span>Inicio</span>
+    </button>
+    <button class="tab-btn" onclick="showTab('registrar')" id="tab-registrar">
+      <span class="tab-icon">➕</span>
+      <span>Registrar</span>
+    </button>
+    <button class="tab-btn" onclick="showTab('progreso')" id="tab-progreso">
+      <span class="tab-icon">📊</span>
+      <span>Progreso</span>
+    </button>
+  </nav>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" id="delete-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <h3 class="modal-title">Eliminar registro</h3>
+    <p class="modal-text">¿Seguro que quieres eliminar este registro? Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeDeleteModal()">Cancelar</button>
+      <button class="modal-confirm" onclick="confirmDelete()">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Config ──────────────────────────────────────────────────────────────────
+const API_BASE = 'http://localhost:3001';
+
+const MEAL_PLAN = {
+  desayuno: { leche:1, carne:2, fruta:1, verdura:1, cereales:3, leguminosas:0, grasas:1 },
+  comida:   { leche:0, carne:3, fruta:1, verdura:1, cereales:4, leguminosas:1, grasas:2 },
+  cena:     { leche:1, carne:2, fruta:1, verdura:1, cereales:2, leguminosas:0, grasas:1 },
+  colacion: { leche:0, carne:0, fruta:null, verdura:null, cereales:0, leguminosas:0, grasas:0 },
+};
+const PIPELINE = ['desayuno','comida','cena'];
+const GROUP_LABELS = { leche:'Leche', carne:'Carne', fruta:'Fruta', verdura:'Verdura', cereales:'Cereales', leguminosas:'Leguminosas', grasas:'Grasas' };
+const GROUP_ICONS  = { leche:'🥛', carne:'🥩', fruta:'🍎', verdura:'🥦', cereales:'🌽', leguminosas:'🫘', grasas:'🥑' };
+const MEAL_LABELS  = { desayuno:'Desayuno', comida:'Comida', cena:'Cena', colacion:'Colación' };
+const MEAL_TIMES   = { desayuno:'7:00 – 10:00 am', comida:'1:00 – 3:00 pm', cena:'7:00 – 9:00 pm', colacion:'Entre comidas' };
+const MEAL_ICONS   = { desayuno:'🌅', comida:'☀️', cena:'🌙', colacion:'🍎' };
+const DAILY_TOTALS = { leche:2, carne:7, fruta:3, verdura:3, cereales:9, leguminosas:1, grasas:4 };
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let token         = localStorage.getItem('mt_token') || '';
+let todayData     = null;
+let currentViewMeal = 'desayuno';
+let currentRegMeal  = null;
+let currentInputMethod = null;
+let currentImageB64 = { menu: null, food: null };
+let voiceImageB64   = null;
+let mediaRecorder   = null;
+let audioChunks     = [];
+let recordingTimer  = null;
+let recordingSeconds = 0;
+let audioBlob       = null;
+let pendingAnalysis = null;  // { portions, confidence, notes, identified_foods }
+let pendingDeleteId = null;
+
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+async function doLogin(e) {
+  e.preventDefault();
+  const pwd = document.getElementById('login-pwd').value;
+  try {
+    const r = await fetch(`${API_BASE}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    token = d.token;
+    localStorage.setItem('mt_token', token);
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    initApp();
+  } catch (err) {
+    document.getElementById('login-err').textContent = err.message;
+  }
+}
+
+// ─── API helper ──────────────────────────────────────────────────────────────
+async function api(path, options = {}) {
+  const r = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: { 'x-auth-token': token, 'Content-Type': 'application/json', ...options.headers },
+  });
+  if (r.status === 401) { localStorage.removeItem('mt_token'); location.reload(); }
+  if (!r.ok) {
+    const d = await r.json().catch(() => ({}));
+    throw new Error(d.error || 'Error del servidor');
+  }
+  return r.json();
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+function initApp() {
+  updateDateHeader();
+  loadTodayData();
+}
+
+function updateDateHeader() {
+  const now = new Date();
+  const days = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+  const months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  const h = now.getHours();
+  const greeting = h < 12 ? 'Buenos días' : h < 18 ? 'Buenas tardes' : 'Buenas noches';
+  document.getElementById('today-date-label').textContent =
+    `Hoy, ${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+  document.querySelector('#screen-inicio .header-title').textContent = `${greeting}, Héctor`;
+}
+
+async function loadTodayData() {
+  try {
+    todayData = await api('/api/today');
+    renderInicio();
+    renderRegisterState();
+  } catch (err) {
+    showToast('Error cargando datos: ' + err.message, 'error');
+  }
+}
+
+// ─── INICIO TAB ──────────────────────────────────────────────────────────────
+function renderInicio() {
+  if (!todayData) return;
+  renderPipeline();
+  renderStreakPill();
+  selectViewMeal(todayData.nextMeal === 'completed' ? 'desayuno' : todayData.nextMeal);
+  renderComplianceCard();
+}
+
+function renderPipeline() {
+  const { loggedMeals, nextMeal } = todayData;
+  PIPELINE.forEach((meal, i) => {
+    const dot   = document.getElementById(`pdot-${meal}`);
+    const label = document.getElementById(`plabel-${meal}`);
+    const isDone   = loggedMeals.includes(meal);
+    const isActive = meal === nextMeal;
+    dot.className = 'pipeline-dot ' + (isDone ? 'done' : isActive ? 'active' : 'pending');
+    label.className = 'pipeline-label' + (isActive ? ' active' : '');
+    if (i > 0) {
+      const con = document.getElementById(`pcon-${i}`);
+      con.className = 'pipeline-connector' + (loggedMeals.includes(PIPELINE[i-1]) ? ' done' : '');
+    }
+  });
+
+  // Update view tabs
+  PIPELINE.forEach(meal => {
+    const tab = document.getElementById(`itab-${meal}`);
+    if (todayData.loggedMeals.includes(meal)) {
+      tab.className = 'meal-tab done-tab';
+    } else if (meal === todayData.nextMeal) {
+      tab.className = 'meal-tab active';
+    } else {
+      tab.className = 'meal-tab';
+    }
+  });
+}
+
+function renderStreakPill() {
+  api('/api/stats/streak').then(d => {
+    document.getElementById('streak-num').textContent = `${d.currentStreak} día${d.currentStreak !== 1 ? 's' : ''}`;
+  }).catch(() => {});
+}
+
+function selectViewMeal(meal) {
+  currentViewMeal = meal;
+  // Update tabs
+  ['desayuno','comida','cena','colacion'].forEach(m => {
+    const tab = document.getElementById(`itab-${m}`);
+    const isDone = todayData && todayData.loggedMeals.includes(m);
+    if (m === meal) tab.className = 'meal-tab active';
+    else if (isDone) tab.className = 'meal-tab done-tab';
+    else tab.className = 'meal-tab';
+  });
+
+  const plan = MEAL_PLAN[meal];
+  document.getElementById('view-meal-name').textContent = `${MEAL_ICONS[meal]} ${MEAL_LABELS[meal]}`;
+  document.getElementById('view-meal-time').textContent = MEAL_TIMES[meal];
+
+  // Next meal tag
+  const tagWrap = document.getElementById('next-meal-tag-wrap');
+  if (todayData && meal === todayData.nextMeal) {
+    tagWrap.innerHTML = `<span class="next-meal-tag">⬆ Siguiente</span>`;
+  } else if (todayData && todayData.loggedMeals.includes(meal)) {
+    tagWrap.innerHTML = `<span class="next-meal-tag" style="background:var(--green-lt)">✅ Completado</span>`;
+  } else {
+    tagWrap.innerHTML = '';
+  }
+
+  // Group grid
+  const grid = document.getElementById('group-grid');
+  if (meal === 'colacion') {
+    grid.innerHTML = `
+      <div class="group-chip" style="grid-column:span 2">
+        ${GROUP_ICONS.fruta} <div class="group-chip-info">
+          <div class="group-chip-name">FRUTA (bajo IG)</div>
+          <div class="group-chip-count">Libre <span>sin límite</span></div>
+        </div>
+      </div>
+      <div class="group-chip" style="grid-column:span 2">
+        ${GROUP_ICONS.verdura} <div class="group-chip-info">
+          <div class="group-chip-name">VERDURA</div>
+          <div class="group-chip-count">Libre <span>sin límite</span></div>
+        </div>
+      </div>`;
+  } else {
+    // Find consumed for this meal
+    const mealSummary = todayData.mealSummary?.find(m => m.meal === meal);
+    const consumed = mealSummary?.portions || {};
+    grid.innerHTML = Object.entries(plan)
+      .filter(([, qty]) => qty > 0)
+      .map(([group, qty]) => {
+        const got  = consumed[group] || 0;
+        const done = got >= qty;
+        const over = got > qty;
+        return `<div class="group-chip ${done ? 'done' : ''} ${over ? 'over' : ''}">
+          <span class="group-chip-icon">${GROUP_ICONS[group]}</span>
+          <div class="group-chip-info">
+            <div class="group-chip-name">${GROUP_LABELS[group].toUpperCase()}</div>
+            <div class="group-chip-count">${qty} <span>porciones</span></div>
+          </div>
+          <span class="group-chip-check">${done ? '✅' : ''}</span>
+        </div>`;
+      }).join('');
+  }
+
+  // Log button
+  const btn = document.getElementById('log-btn');
+  if (todayData && todayData.nextMeal === 'completed') {
+    btn.className = 'log-btn completed';
+    btn.innerHTML = '🏆 ¡Día completado!';
+    btn.onclick = null;
+  } else if (todayData && meal === todayData.nextMeal) {
+    btn.className = 'log-btn';
+    btn.innerHTML = `<span>➕</span> Registrar ${MEAL_LABELS[meal]}`;
+    btn.onclick = goToRegister;
+  } else if (meal === 'colacion') {
+    btn.className = 'log-btn';
+    btn.innerHTML = `<span>➕</span> Registrar Colación`;
+    btn.onclick = goToRegister;
+  } else {
+    btn.className = 'log-btn';
+    btn.style.background = 'var(--bg2)';
+    btn.style.color = 'var(--muted)';
+    btn.innerHTML = todayData?.loggedMeals.includes(meal)
+      ? '✅ Ya registrado'
+      : `🔒 Pendiente de orden`;
+    btn.onclick = null;
+  }
+}
+
+function renderComplianceCard() {
+  if (!todayData) return;
+  const card = document.getElementById('today-compliance-card');
+  card.style.display = '';
+
+  // Compute compliance from today
+  let total = 0, hit = 0;
+  for (const [g, t] of Object.entries(DAILY_TOTALS)) {
+    total += t;
+    hit   += Math.min(todayData.consumed[g] || 0, t);
+  }
+  const pct = total > 0 ? Math.round((hit/total)*100) : 0;
+  const circle = document.getElementById('compliance-circle');
+  const circumference = 138.2;
+  circle.style.strokeDashoffset = circumference - (circumference * pct / 100);
+  document.getElementById('compliance-pct').textContent = `${pct}%`;
+  document.getElementById('compliance-val').textContent = `${pct}% cumplido`;
+  const done = todayData.loggedMeals.length;
+  document.getElementById('compliance-sub').textContent =
+    `${done}/3 comidas registradas`;
+}
+
+// ─── REGISTER TAB ─────────────────────────────────────────────────────────────
+function renderRegisterState() {
+  if (!todayData) return;
+  const { nextMeal, loggedMeals } = todayData;
+  PIPELINE.forEach(meal => {
+    const btn = document.getElementById(`rmt-${meal}`);
+    if (loggedMeals.includes(meal)) {
+      btn.className = 'meal-type-btn done-m';
+    } else if (meal === nextMeal || meal === 'colacion') {
+      btn.className = 'meal-type-btn';
+    } else {
+      btn.className = 'meal-type-btn locked';
+    }
+  });
+  // Auto-select next meal
+  if (nextMeal && nextMeal !== 'completed') selectRegMeal(nextMeal);
+}
+
+function selectRegMeal(meal) {
+  if (!todayData) return;
+  const { nextMeal, loggedMeals } = todayData;
+  // Block locked meals
+  const isLocked = PIPELINE.includes(meal) && meal !== nextMeal && !loggedMeals.includes(meal);
+  if (isLocked && meal !== 'colacion') {
+    showToast(`Primero registra ${MEAL_LABELS[nextMeal]}`, 'error');
+    return;
+  }
+  currentRegMeal = meal;
+  ['desayuno','comida','cena','colacion'].forEach(m => {
+    const btn = document.getElementById(`rmt-${m}`);
+    if (m === meal) btn.classList.add('selected');
+    else btn.classList.remove('selected');
+  });
+}
+
+function selectInputMethod(method) {
+  currentInputMethod = method;
+  ['foto_menu','foto_comida','voz','manual'].forEach(m => {
+    document.getElementById(`im-${m}`).className = 'input-card' + (m === method ? ' selected' : '');
+    document.getElementById(`ia-${m}`).classList.add('hidden');
+  });
+  document.getElementById('input-area-wrap').classList.remove('hidden');
+  document.getElementById(`ia-${method}`).classList.remove('hidden');
+  document.getElementById('analysis-result-wrap').classList.add('hidden');
+  // Enable analyze button for manual based on content
+  if (method === 'manual') {
+    const ta = document.getElementById('manual-text');
+    ta.oninput = () => {
+      document.getElementById('analyze-manual-btn').disabled = !ta.value.trim();
+    };
+  }
+}
+
+// ─── Image handling ───────────────────────────────────────────────────────────
+function handleImageFile(event, type) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const b64 = e.target.result.split(',')[1];
+    currentImageB64[type] = b64;
+    const wrap = document.getElementById(`${type === 'menu' ? 'menu' : 'food'}-preview-wrap`);
+    wrap.innerHTML = `<img src="${e.target.result}" alt="preview">`;
+    document.getElementById(`analyze-${type === 'menu' ? 'menu' : 'food'}-btn`).disabled = false;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function analyzeImage(type) {
+  if (!currentRegMeal) { showToast('Selecciona el tiempo de comida', 'error'); return; }
+  const b64 = currentImageB64[type];
+  if (!b64) return;
+
+  const spinnerId = `${type === 'menu' ? 'menu' : 'food'}-spinner`;
+  const textId    = `${type === 'menu' ? 'menu' : 'food'}-btn-text`;
+  const btnId     = `analyze-${type === 'menu' ? 'menu' : 'food'}-btn`;
+
+  setLoading(spinnerId, textId, btnId, true, 'Analizando...');
+  try {
+    const extra = document.getElementById(`${type === 'menu' ? 'menu' : 'food'}-extra-text`)?.value || '';
+    const result = await api('/api/analyze/image', {
+      method: 'POST',
+      body: JSON.stringify({
+        image_base64: b64,
+        image_type: 'image/jpeg',
+        meal_type: currentRegMeal,
+        extra_description: extra,
+      }),
+    });
+    pendingAnalysis = result;
+    renderAnalysisResult(result);
+  } catch (err) {
+    showToast('Error al analizar: ' + err.message, 'error');
+  } finally {
+    setLoading(spinnerId, textId, btnId, false, '✨ Analizar');
+  }
+}
+
+// ─── Voice recording ──────────────────────────────────────────────────────────
+function handleVoiceImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    voiceImageB64 = e.target.result.split(',')[1];
+    const prev = document.getElementById('voice-img-preview');
+    prev.classList.remove('hidden');
+    prev.innerHTML = `<img src="${e.target.result}" alt="preview">`;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function toggleRecording() {
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    stopRecording();
+  } else {
+    startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      document.getElementById('analyze-voice-btn').disabled = false;
+      document.getElementById('record-status').textContent = '✅ Grabación lista — toca analizar';
+    };
+    mediaRecorder.start();
+    recordingSeconds = 0;
+    document.getElementById('record-btn').classList.add('recording');
+    document.getElementById('record-btn').textContent = '⏹️';
+    document.getElementById('record-status').textContent = 'Grabando...';
+    document.getElementById('record-timer').classList.remove('hidden');
+    recordingTimer = setInterval(() => {
+      recordingSeconds++;
+      const m = Math.floor(recordingSeconds/60);
+      const s = recordingSeconds % 60;
+      document.getElementById('record-timer').textContent = `${m}:${String(s).padStart(2,'0')}`;
+    }, 1000);
+  } catch (err) {
+    showToast('No se pudo acceder al micrófono', 'error');
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder) mediaRecorder.stop();
+  clearInterval(recordingTimer);
+  document.getElementById('record-btn').classList.remove('recording');
+  document.getElementById('record-btn').textContent = '🎙️';
+}
+
+async function analyzeVoice() {
+  if (!currentRegMeal) { showToast('Selecciona el tiempo de comida', 'error'); return; }
+  if (!audioBlob) return;
+  setLoading('voice-spinner','voice-btn-text','analyze-voice-btn', true, 'Transcribiendo y analizando...');
+  try {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, 'voice.webm');
+    formData.append('meal_type', currentRegMeal);
+    if (voiceImageB64) formData.append('image_base64', voiceImageB64);
+
+    const r = await fetch(`${API_BASE}/api/analyze/voice`, {
+      method: 'POST',
+      headers: { 'x-auth-token': token },
+      body: formData,
+    });
+    if (!r.ok) throw new Error((await r.json()).error);
+    const result = await r.json();
+    if (result.transcript) {
+      document.getElementById('transcript-box').textContent = `"${result.transcript}"`;
+      document.getElementById('transcript-box').classList.remove('hidden');
+    }
+    pendingAnalysis = result;
+    renderAnalysisResult(result);
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    setLoading('voice-spinner','voice-btn-text','analyze-voice-btn', false, '✨ Analizar nota de voz');
+  }
+}
+
+async function analyzeText() {
+  if (!currentRegMeal) { showToast('Selecciona el tiempo de comida', 'error'); return; }
+  const text = document.getElementById('manual-text').value.trim();
+  if (!text) return;
+  setLoading('manual-spinner','manual-btn-text','analyze-manual-btn', true, 'Analizando...');
+  try {
+    const result = await api('/api/analyze/text', {
+      method: 'POST',
+      body: JSON.stringify({ description: text, meal_type: currentRegMeal }),
+    });
+    pendingAnalysis = result;
+    renderAnalysisResult(result);
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  } finally {
+    setLoading('manual-spinner','manual-btn-text','analyze-manual-btn', false, '✨ Analizar');
+  }
+}
+
+// ─── Analysis Result ──────────────────────────────────────────────────────────
+function renderAnalysisResult(result) {
+  document.getElementById('analysis-result-wrap').classList.remove('hidden');
+  const badge = document.getElementById('confidence-badge');
+  badge.textContent = result.confidence || '—';
+  badge.className = `confidence-badge ${result.confidence || 'media'}`;
+
+  const plan = MEAL_PLAN[currentRegMeal] || {};
+  const editor = document.getElementById('portions-editor');
+  editor.innerHTML = Object.entries(GROUP_LABELS).map(([group, label]) => {
+    const planQty  = plan[group] ?? 0;
+    const gotQty   = result.portions_summary?.[group] ?? 0;
+    const showZeroTarget = planQty === 0 && gotQty === 0;
+    if (showZeroTarget && currentRegMeal !== 'colacion') return '';
+    return `<div class="portion-row">
+      <span class="portion-icon">${GROUP_ICONS[group]}</span>
+      <div class="portion-label">
+        <div style="font-size:13px;font-weight:600">${label}</div>
+        ${planQty > 0 ? `<div style="font-size:10px;color:var(--muted)">Meta: ${planQty}</div>` : ''}
+      </div>
+      <div class="portion-stepper">
+        <button class="stepper-btn" onclick="adjustPortion('${group}',-0.5)">−</button>
+        <div>
+          <div class="stepper-val" id="pval-${group}">${gotQty}</div>
+        </div>
+        <button class="stepper-btn" onclick="adjustPortion('${group}',0.5)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const notes = document.getElementById('analysis-notes');
+  if (result.notes) {
+    notes.textContent = '💬 ' + result.notes;
+    notes.classList.remove('hidden');
+  } else {
+    notes.classList.add('hidden');
+  }
+
+  // Scroll to result
+  document.getElementById('analysis-result-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function adjustPortion(group, delta) {
+  const el = document.getElementById(`pval-${group}`);
+  if (!el || !pendingAnalysis) return;
+  const current = parseFloat(el.textContent) || 0;
+  const newVal  = Math.max(0, current + delta);
+  el.textContent = newVal;
+  if (!pendingAnalysis.portions_summary) pendingAnalysis.portions_summary = {};
+  pendingAnalysis.portions_summary[group] = newVal;
+}
+
+async function saveMealLog() {
+  if (!pendingAnalysis || !currentRegMeal) return;
+  try {
+    const portions = {};
+    Object.keys(GROUP_LABELS).forEach(g => {
+      const el = document.getElementById(`pval-${g}`);
+      portions[g] = el ? parseFloat(el.textContent) || 0 : 0;
+    });
+
+    await api('/api/logs', {
+      method: 'POST',
+      body: JSON.stringify({
+        meal_type:    currentRegMeal,
+        portions,
+        input_type:   currentInputMethod,
+        gpt_analysis: pendingAnalysis,
+      }),
+    });
+
+    showToast(`${MEAL_LABELS[currentRegMeal]} guardado ✅`, 'success');
+    resetRegister();
+    await loadTodayData();
+    showTab('inicio');
+  } catch (err) {
+    showToast(err.message, 'error');
+  }
+}
+
+function resetRegister() {
+  pendingAnalysis   = null;
+  currentInputMethod = null;
+  currentImageB64   = { menu: null, food: null };
+  voiceImageB64     = null;
+  audioBlob         = null;
+  if (mediaRecorder?.state === 'recording') stopRecording();
+  document.getElementById('input-area-wrap').classList.add('hidden');
+  document.getElementById('analysis-result-wrap').classList.add('hidden');
+  ['foto_menu','foto_comida','voz','manual'].forEach(m => {
+    document.getElementById(`im-${m}`).classList.remove('selected');
+    document.getElementById(`ia-${m}`).classList.add('hidden');
+  });
+  // Reset inputs
+  document.getElementById('manual-text').value = '';
+  document.getElementById('menu-extra-text').value = '';
+  document.getElementById('food-extra-text').value = '';
+  document.getElementById('menu-preview-wrap').innerHTML = `<div class="img-preview-placeholder"><span>📋</span><p>Toca para subir foto del menú</p></div>`;
+  document.getElementById('food-preview-wrap').innerHTML = `<div class="img-preview-placeholder"><span>📸</span><p>Toma o sube una foto de tu comida</p></div>`;
+  document.getElementById('record-status').textContent = 'Toca para grabar';
+  document.getElementById('record-timer').classList.add('hidden');
+  document.getElementById('transcript-box').classList.add('hidden');
+  document.getElementById('voice-img-preview').classList.add('hidden');
+}
+
+function goToRegister() {
+  showTab('registrar');
+  if (todayData?.nextMeal) selectRegMeal(todayData.nextMeal);
+}
+
+// ─── PROGRESO TAB ─────────────────────────────────────────────────────────────
+async function loadProgresoData() {
+  try {
+    const [streak, week] = await Promise.all([
+      api('/api/stats/streak'),
+      api('/api/stats/week'),
+    ]);
+    renderStreakCard(streak, week);
+    renderWeekChart(week);
+    renderGroupProgress();
+  } catch (err) {
+    showToast('Error cargando progreso', 'error');
+  }
+}
+
+function renderStreakCard(streak, week) {
+  document.getElementById('sc-num').textContent   = streak.currentStreak;
+  document.getElementById('sc-best').textContent  = streak.bestStreak;
+  document.getElementById('sc-total').textContent = streak.totalCompleteDays;
+  document.getElementById('sc-avg').textContent   = `${week.avgCompliance}%`;
+  document.getElementById('sc-sub').textContent =
+    streak.currentStreak === 0
+      ? 'Empieza hoy tu racha'
+      : streak.currentStreak === 1
+        ? 'día consecutivo completado 🎉'
+        : 'días consecutivos completados 🔥';
+}
+
+function renderWeekChart(week) {
+  const today = new Date().toISOString().split('T')[0];
+  const days7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days7.push(d.toISOString().split('T')[0]);
+  }
+  const DAY_LABELS = ['D','L','M','X','J','V','S'];
+
+  const wrap = document.getElementById('week-bars');
+  wrap.innerHTML = days7.map(date => {
+    const entry  = week.days?.find(d => d.date === date);
+    const pct    = entry?.compliance || 0;
+    const height = Math.max(4, pct * 0.8);
+    const d      = new Date(date + 'T12:00:00');
+    const label  = DAY_LABELS[d.getDay()];
+    const isToday = date === today;
+    const cls = isToday ? 'today' : pct >= 100 ? 'perfect' : pct > 0 ? 'filled' : '';
+    return `<div class="week-bar-wrap">
+      <div class="week-bar ${cls}" style="height:${height}px">
+        ${pct > 0 ? `<div class="week-bar-pct">${pct}%</div>` : ''}
+      </div>
+      <div class="week-bar-day ${isToday ? 'today' : ''}">${label}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderGroupProgress() {
+  if (!todayData) return;
+  const list = document.getElementById('group-progress-list');
+  list.innerHTML = Object.entries(DAILY_TOTALS).map(([group, total]) => {
+    const consumed = todayData.consumed[group] || 0;
+    const pct  = total > 0 ? Math.min(Math.round((consumed/total)*100), 100) : 0;
+    const over = consumed > total;
+    return `<div class="gp-row">
+      <div class="gp-header">
+        <span class="gp-name">${GROUP_ICONS[group]} ${GROUP_LABELS[group]}</span>
+        <span class="gp-count">${consumed}/${total} porciones</span>
+      </div>
+      <div class="gp-bar">
+        <div class="gp-fill ${over ? 'over' : pct === 100 ? 'perfect' : ''}" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadHistory() {
+  try {
+    const logs = await api('/api/logs?limit=30');
+    renderHistory(logs);
+  } catch (err) {}
+}
+
+function renderHistory(logs) {
+  const list = document.getElementById('history-list');
+  if (!logs || logs.length === 0) {
+    list.innerHTML = `<div class="empty-state"><span>🍽️</span><p>No hay registros aún</p></div>`;
+    return;
+  }
+  list.innerHTML = logs.map(log => {
+    const d    = new Date(log.logged_at);
+    const time = d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
+    const dateStr = d.toLocaleDateString('es-MX', { day:'2-digit', month:'short' });
+    const chips = log.portions
+      ? Object.entries(log.portions)
+          .filter(([,q]) => q > 0)
+          .map(([g,q]) => `<span class="history-chip">${GROUP_ICONS[g]} ${q}</span>`)
+          .join('')
+      : '';
+    const input_icons = { foto_menu:'📋', foto_comida:'📸', voz:'🎙️', manual:'✏️' };
+    return `<div class="history-item">
+      <div class="history-icon">${MEAL_ICONS[log.meal_type] || '🍽️'}</div>
+      <div class="history-content">
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="history-meal">${MEAL_LABELS[log.meal_type] || log.meal_type}</div>
+          <span style="font-size:11px;background:var(--bg2);padding:1px 6px;border-radius:100px;color:var(--muted)">${input_icons[log.input_type]||''}</span>
+        </div>
+        <div class="history-desc">${log.description || log.gpt_analysis?.notes || '—'}</div>
+        <div class="history-chips">${chips}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+        <div class="history-time">${dateStr}<br>${time}</div>
+        <button class="history-delete" onclick="openDeleteModal('${log.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadMonthlySummary() {
+  try {
+    const now = new Date();
+    const from = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`;
+    const to   = now.toISOString().split('T')[0];
+    const data = await api(`/api/stats/daily?from=${from}&to=${to}`);
+    const el   = document.getElementById('monthly-summary');
+    const total = data.length;
+    const complete = data.filter(d => d.allMealsDone).length;
+    const avg = total > 0 ? Math.round(data.reduce((s,d) => s+d.compliance,0)/total) : 0;
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center">
+        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--green)">${complete}</div><div style="font-size:11px;color:var(--muted)">días completos</div></div>
+        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--accent)">${total}</div><div style="font-size:11px;color:var(--muted)">días registrados</div></div>
+        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--gold)">${avg}%</div><div style="font-size:11px;color:var(--muted)">cumplimiento</div></div>
+      </div>`;
+  } catch(err) {}
+}
+
+function selectPeriod(period) {
+  ['semana','mes','historial'].forEach(p => {
+    document.getElementById(`pt-${p}`).className = 'period-tab' + (p === period ? ' active' : '');
+    document.getElementById(`prog-${p}`).className = p === period ? '' : 'hidden';
+  });
+  if (period === 'historial') loadHistory();
+  if (period === 'mes') loadMonthlySummary();
+}
+
+// ─── Delete Modal ──────────────────────────────────────────────────────────────
+function openDeleteModal(id) {
+  pendingDeleteId = id;
+  document.getElementById('delete-modal').classList.add('open');
+}
+function closeDeleteModal() {
+  pendingDeleteId = null;
+  document.getElementById('delete-modal').classList.remove('open');
+}
+async function confirmDelete() {
+  if (!pendingDeleteId) return;
+  try {
+    await api(`/api/logs/${pendingDeleteId}`, { method: 'DELETE' });
+    closeDeleteModal();
+    showToast('Registro eliminado', 'success');
+    await loadTodayData();
+    loadHistory();
+  } catch (err) {
+    showToast('Error al eliminar', 'error');
+  }
+}
+
+// ─── Tab navigation ───────────────────────────────────────────────────────────
+function showTab(tab) {
+  ['inicio','registrar','progreso'].forEach(t => {
+    document.getElementById(`screen-${t}`).className = 'screen' + (t === tab ? ' active' : '');
+    document.getElementById(`tab-${t}`).className = 'tab-btn' + (t === tab ? ' active' : '');
+  });
+  if (tab === 'progreso') {
+    loadProgresoData();
+    selectPeriod('semana');
+  }
+  if (tab === 'registrar') renderRegisterState();
+  window.scrollTo({ top: 0 });
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.className = `toast ${type}`, 2500);
+}
+
+function setLoading(spinnerId, textId, btnId, loading, text) {
+  document.getElementById(spinnerId).classList.toggle('hidden', !loading);
+  document.getElementById(textId).textContent = text;
+  document.getElementById(btnId).disabled = loading;
+}
+
+// ─── Boot ──────────────────────────────────────────────────────────────────────
+if (token) {
+  // Verify token still valid
+  fetch(`${API_BASE}/api/health`, { headers: { 'x-auth-token': token } })
+    .then(r => {
+      if (r.ok) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').classList.add('visible');
+        initApp();
+      }
+    })
+    .catch(() => {});
+}
+</script>
+</body>
+</html>
