@@ -3,7 +3,7 @@ import cors from 'cors';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import multer from 'multer';
-import { buildEquivalentsPromptContext } from './data/equivalents.js';
+import { buildEquivalentsPromptContext, equivalents, FOOD_GROUPS } from './data/equivalents.js';
 import { MEAL_PLAN, PIPELINE_ORDER, getNextMeal, DAILY_TOTALS } from './data/meal-plan.js';
 
 const app  = express();
@@ -101,6 +101,12 @@ app.get('/api/today', requireAuth, async (req, res) => {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// ─── Equivalents ──────────────────────────────────────────────────────────────
+
+app.get('/api/equivalents', requireAuth, (req, res) => {
+  res.json({ groups: FOOD_GROUPS, items: equivalents });
 });
 
 // ─── Meal Logs ────────────────────────────────────────────────────────────────

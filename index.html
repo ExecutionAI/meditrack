@@ -665,6 +665,45 @@
   .empty-state { text-align: center; padding: 32px 20px; color: var(--muted); }
   .empty-state span { font-size: 40px; display: block; margin-bottom: 8px; }
   .empty-state p { font-size: 13px; }
+
+  /* ── Equivalencias ── */
+  .eq-search-wrap { margin-bottom: 12px; }
+  .eq-search {
+    width: 100%; padding: 11px 14px; border-radius: 12px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    font-size: 15px; color: var(--text); outline: none;
+    box-sizing: border-box;
+  }
+  .eq-search:focus { border-color: var(--green); }
+  .eq-group-chips {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+    scrollbar-width: none; margin-bottom: 14px;
+  }
+  .eq-group-chips::-webkit-scrollbar { display: none; }
+  .eq-chip {
+    flex-shrink: 0; padding: 6px 12px; border-radius: 20px; font-size: 12px;
+    font-weight: 600; border: 1.5px solid var(--border);
+    background: var(--surface); color: var(--muted); cursor: pointer;
+  }
+  .eq-chip.active { background: var(--green); border-color: var(--green); color: #fff; }
+  .eq-list { display: flex; flex-direction: column; gap: 2px; }
+  .eq-group-header {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+    text-transform: uppercase; color: var(--green); padding: 16px 0 6px;
+  }
+  .eq-item {
+    background: var(--surface); border-radius: 10px;
+    padding: 11px 14px; border: 1px solid var(--border);
+  }
+  .eq-item-name { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .eq-item-detail { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .eq-portion { font-size: 13px; color: var(--green); font-weight: 700; }
+  .eq-notes { font-size: 12px; color: var(--muted); }
+  .eq-gi-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 7px;
+    border-radius: 10px; letter-spacing: 0.3px;
+  }
+  .week-bar.future { background: var(--border); opacity: 0.5; }
 </style>
 </head>
 <body>
@@ -970,6 +1009,33 @@
     </div>
   </div>
 
+  <!-- EQUIVALENCIAS -->
+  <div class="screen" id="screen-equivalencias">
+    <div class="screen-header">
+      <p class="header-eyebrow">Referencia</p>
+      <h1 class="header-title">Equivalencias</h1>
+      <p class="header-sub">1 porción = 1 equivalente del grupo</p>
+    </div>
+    <div class="prog-wrap">
+      <div class="eq-search-wrap">
+        <input class="eq-search" id="eq-search" type="search" placeholder="Buscar alimento…" oninput="filterEquivalencias()" autocomplete="off">
+      </div>
+      <div class="eq-group-chips" id="eq-group-chips">
+        <button class="eq-chip active" data-group="all" onclick="selectEqGroup('all')">Todos</button>
+        <button class="eq-chip" data-group="leche" onclick="selectEqGroup('leche')">🥛 Leche</button>
+        <button class="eq-chip" data-group="carne" onclick="selectEqGroup('carne')">🥩 Carne</button>
+        <button class="eq-chip" data-group="fruta" onclick="selectEqGroup('fruta')">🍎 Fruta</button>
+        <button class="eq-chip" data-group="verdura" onclick="selectEqGroup('verdura')">🥦 Verdura</button>
+        <button class="eq-chip" data-group="cereales" onclick="selectEqGroup('cereales')">🌾 Cereales</button>
+        <button class="eq-chip" data-group="leguminosas" onclick="selectEqGroup('leguminosas')">🫘 Leguminosas</button>
+        <button class="eq-chip" data-group="grasas" onclick="selectEqGroup('grasas')">🫒 Grasas</button>
+      </div>
+      <div id="eq-list" class="eq-list">
+        <div class="empty-state"><p>Cargando...</p></div>
+      </div>
+    </div>
+  </div>
+
   <!-- TAB BAR -->
   <nav class="tab-bar">
     <button class="tab-btn active" onclick="showTab('inicio')" id="tab-inicio">
@@ -983,6 +1049,10 @@
     <button class="tab-btn" onclick="showTab('progreso')" id="tab-progreso">
       <span class="tab-icon">📊</span>
       <span>Progreso</span>
+    </button>
+    <button class="tab-btn" onclick="showTab('equivalencias')" id="tab-equivalencias">
+      <span class="tab-icon">📋</span>
+      <span>Equiv.</span>
     </button>
   </nav>
 </div>
@@ -1600,26 +1670,32 @@ function renderStreakCard(streak, week) {
 
 function renderWeekChart(week) {
   const today = todayMX();
+  // Build Mon–Sun of current week
+  const todayDate = new Date(today + 'T12:00:00');
+  const dow = todayDate.getDay(); // 0=Sun
+  const monday = new Date(todayDate);
+  monday.setDate(todayDate.getDate() - (dow === 0 ? 6 : dow - 1));
+  const WEEK_LABELS = ['L','M','M','J','V','S','D'];
   const days7 = [];
-  for (let i = 6; i >= 0; i--) {
-    days7.push(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date(Date.now() - i * 86400000)));
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    days7.push(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(d));
   }
-  const DAY_LABELS = ['D','L','M','X','J','V','S'];
 
   const wrap = document.getElementById('week-bars');
-  wrap.innerHTML = days7.map(date => {
-    const entry  = week.days?.find(d => d.date === date);
-    const pct    = entry?.compliance || 0;
-    const height = Math.max(4, pct * 0.8);
-    const d      = new Date(date + 'T12:00:00');
-    const label  = DAY_LABELS[d.getDay()];
-    const isToday = date === today;
-    const cls = isToday ? 'today' : pct >= 100 ? 'perfect' : pct > 0 ? 'filled' : '';
+  wrap.innerHTML = days7.map((date, i) => {
+    const entry    = week.days?.find(d => d.date === date);
+    const pct      = entry?.compliance || 0;
+    const isFuture = date > today;
+    const height   = isFuture ? 4 : Math.max(4, pct * 0.8);
+    const isToday  = date === today;
+    const cls = isFuture ? 'future' : isToday ? 'today' : pct >= 100 ? 'perfect' : pct > 0 ? 'filled' : '';
     return `<div class="week-bar-wrap">
       <div class="week-bar ${cls}" style="height:${height}px">
-        ${pct > 0 ? `<div class="week-bar-pct">${pct}%</div>` : ''}
+        ${pct > 0 && !isFuture ? `<div class="week-bar-pct">${pct}%</div>` : ''}
       </div>
-      <div class="week-bar-day ${isToday ? 'today' : ''}">${label}</div>
+      <div class="week-bar-day ${isToday ? 'today' : ''}">${WEEK_LABELS[i]}</div>
     </div>`;
   }).join('');
 }
@@ -1736,8 +1812,78 @@ async function confirmDelete() {
 }
 
 // ─── Tab navigation ───────────────────────────────────────────────────────────
+// ─── EQUIVALENCIAS ────────────────────────────────────────────────────────────
+let eqData = null;
+let eqActiveGroup = 'all';
+
+async function loadEquivalencias() {
+  if (eqData) { renderEqList(); return; }
+  try {
+    eqData = await api('/api/equivalents');
+    renderEqList();
+  } catch (err) {
+    document.getElementById('eq-list').innerHTML = `<div class="empty-state"><p>Error cargando datos</p></div>`;
+  }
+}
+
+function selectEqGroup(group) {
+  eqActiveGroup = group;
+  document.querySelectorAll('.eq-chip').forEach(c => {
+    c.classList.toggle('active', c.dataset.group === group);
+  });
+  renderEqList();
+}
+
+function filterEquivalencias() {
+  renderEqList();
+}
+
+const GI_LABEL = { bajo: 'IG bajo', moderado: 'IG moderado', alto: 'IG alto' };
+const GI_COLOR = { bajo: 'var(--green)', moderado: 'var(--warn)', alto: 'var(--danger)' };
+const GROUP_ICONS_EQ = { leche:'🥛', carne:'🥩', fruta:'🍎', verdura:'🥦', cereales:'🌾', leguminosas:'🫘', grasas:'🫒' };
+
+function renderEqList() {
+  if (!eqData) return;
+  const query = (document.getElementById('eq-search')?.value || '').toLowerCase().trim();
+  const list  = document.getElementById('eq-list');
+  const groups = eqActiveGroup === 'all'
+    ? Object.keys(eqData.items)
+    : [eqActiveGroup];
+
+  let html = '';
+  for (const group of groups) {
+    const items = eqData.items[group] || [];
+    const filtered = query
+      ? items.filter(it => it.name.toLowerCase().includes(query))
+      : items;
+    if (!filtered.length) continue;
+
+    if (eqActiveGroup === 'all') {
+      html += `<div class="eq-group-header">${GROUP_ICONS_EQ[group]} ${eqData.groups[group]}</div>`;
+    }
+    for (const it of filtered) {
+      const portionText = it.amount ? `${it.amount} ${it.unit}` : it.unit;
+      const notesText   = it.notes ? `<span class="eq-notes">${it.notes}</span>` : '';
+      const giBadge     = it.glycemicIndex
+        ? `<span class="eq-gi-badge" style="background:${GI_COLOR[it.glycemicIndex]}22;color:${GI_COLOR[it.glycemicIndex]}">${GI_LABEL[it.glycemicIndex]}</span>`
+        : '';
+      const subgBadge   = it.group
+        ? `<span class="eq-gi-badge" style="background:var(--surface);color:var(--muted)">Grupo ${it.group}</span>`
+        : '';
+      html += `<div class="eq-item">
+        <div class="eq-item-name">${it.name}</div>
+        <div class="eq-item-detail">
+          <span class="eq-portion">${portionText}</span>
+          ${notesText}${giBadge}${subgBadge}
+        </div>
+      </div>`;
+    }
+  }
+  list.innerHTML = html || `<div class="empty-state"><span>🔍</span><p>Sin resultados para "${query}"</p></div>`;
+}
+
 function showTab(tab) {
-  ['inicio','registrar','progreso'].forEach(t => {
+  ['inicio','registrar','progreso','equivalencias'].forEach(t => {
     document.getElementById(`screen-${t}`).className = 'screen' + (t === tab ? ' active' : '');
     document.getElementById(`tab-${t}`).className = 'tab-btn' + (t === tab ? ' active' : '');
   });
@@ -1746,6 +1892,7 @@ function showTab(tab) {
     selectPeriod('semana');
   }
   if (tab === 'registrar') renderRegisterState();
+  if (tab === 'equivalencias') loadEquivalencias();
   window.scrollTo({ top: 0 });
 }
 
