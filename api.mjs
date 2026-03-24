@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
 import multer from 'multer';
 import { buildEquivalentsPromptContext, equivalents, FOOD_GROUPS } from './data/equivalents.js';
-import { MEAL_PLAN, PIPELINE_ORDER, getNextMeal, DAILY_TOTALS } from './data/meal-plan.js';
+import { MEAL_PLAN, PIPELINE_ORDER, getNextMeal, DAILY_TOTALS, MEAL_LABELS } from './data/meal-plan.js';
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -198,6 +198,39 @@ app.delete('/api/logs/:id', requireAuth, async (req, res) => {
 
 const EQUIVALENTS_CONTEXT = buildEquivalentsPromptContext();
 
+const RECIPE_SYSTEM_PROMPT = `Eres un nutriólogo digital y chef mexicano experto en el sistema de equivalentes IMSS.
+Propón TRES recetas mexicanas distintas y prácticas para el tiempo de comida indicado.
+Cada receta debe usar EXACTAMENTE las porciones del plan de Héctor.
+
+Plan de porciones por tiempo de comida:
+${JSON.stringify(MEAL_PLAN, null, 2)}
+
+Equivalentes disponibles (usa SOLO alimentos de esta lista):
+${EQUIVALENTS_CONTEXT}
+
+Reglas:
+- Varía los ingredientes entre las 3 recetas (no repitas los mismos alimentos principales).
+- Cada receta cubre EXACTAMENTE las porciones del plan para ese tiempo.
+- Grupos con 0 porciones NO aparecen.
+- Máximo 6 pasos por receta, lenguaje sencillo.
+- Responde ÚNICAMENTE con JSON válido, sin markdown.
+
+Estructura exacta:
+{
+  "meal_type": "desayuno|comida|cena",
+  "recipes": [
+    {
+      "recipe_name": "Nombre de la receta",
+      "servings": "descripción",
+      "ingredients": [
+        { "group": "grupo", "item": "nombre", "amount": "cantidad con unidad", "portions": 1 }
+      ],
+      "steps": ["Paso 1...", "Paso 2..."],
+      "notes": "observación opcional"
+    }
+  ]
+}`;
+
 const ANALYSIS_SYSTEM_PROMPT = `Eres un nutriólogo digital experto en el sistema mexicano de equivalentes alimentarios (IMSS).
 Tu tarea es analizar lo que comió el paciente y mapear cada alimento al grupo de intercambios correspondiente.
 
@@ -349,6 +382,33 @@ Comida: ${meal_type || 'no especificada'}.`,
     }
 
     res.json({ transcript, ...result });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ─── Recipe Suggestion ────────────────────────────────────────────────────────
+
+app.post('/api/suggest-recipe', requireAuth, async (req, res) => {
+  try {
+    const { meal_type } = req.body;
+    const VALID = ['desayuno', 'comida', 'cena'];
+    if (!meal_type || !VALID.includes(meal_type))
+      return res.status(400).json({ error: `meal_type debe ser uno de: ${VALID.join(', ')}` });
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        { role: 'system', content: RECIPE_SYSTEM_PROMPT },
+        { role: 'user',   content: `Sugiere 3 recetas para ${MEAL_LABELS[meal_type]}. Porciones requeridas: ${JSON.stringify(MEAL_PLAN[meal_type])}.` },
+      ],
+      response_format: { type: 'json_object' },
+      max_tokens: 2000,
+    });
+
+    const result = JSON.parse(response.choices[0].message.content);
+    res.json(result);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

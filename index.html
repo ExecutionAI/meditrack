@@ -666,6 +666,40 @@
   .empty-state span { font-size: 40px; display: block; margin-bottom: 8px; }
   .empty-state p { font-size: 13px; }
 
+  /* ── Recipe suggestion ── */
+  .recipe-hint-btn {
+    width: 100%; margin-top: 10px; padding: 10px 16px;
+    border-radius: var(--r-sm); border: 1.5px solid var(--border);
+    background: var(--bg); color: var(--text2);
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background .2s, border-color .2s;
+  }
+  .recipe-hint-btn:active { background: var(--bg2); border-color: var(--green-lt); }
+  .recipe-hint-btn.loading { opacity: .6; pointer-events: none; }
+  .recipe-modal-scroll { max-height: 72dvh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .recipe-modal-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .recipe-modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .recipe-card { border: 1.5px solid var(--border); border-radius: var(--r-sm); margin-bottom: 8px; overflow: hidden; transition: border-color .2s; }
+  .recipe-card.open { border-color: var(--green-lt); }
+  .recipe-card-header { display: flex; align-items: center; justify-content: space-between; padding: 13px 14px; cursor: pointer; user-select: none; background: var(--surface); }
+  .recipe-card-header:active { background: var(--bg); }
+  .recipe-card-title { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+  .recipe-card-chevron { font-size: 12px; color: var(--muted); transition: transform .2s; }
+  .recipe-card.open .recipe-card-chevron { transform: rotate(180deg); }
+  .recipe-card-body { display: none; padding: 0 14px 14px; background: var(--surface); }
+  .recipe-card.open .recipe-card-body { display: block; }
+  .recipe-ingredient { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .recipe-ingredient:last-child { border-bottom: none; }
+  .recipe-ingredient-icon { font-size: 17px; width: 22px; flex-shrink: 0; }
+  .recipe-ingredient-name { flex: 1; font-size: 13px; font-weight: 500; }
+  .recipe-ingredient-amount { font-size: 12px; color: var(--muted); }
+  .recipe-steps-list { padding-left: 0; list-style: none; display: flex; flex-direction: column; gap: 9px; margin-top: 14px; }
+  .recipe-step { display: flex; align-items: flex-start; gap: 10px; font-size: 13px; line-height: 1.5; color: var(--text2); }
+  .recipe-step-num { flex-shrink: 0; width: 21px; height: 21px; border-radius: 50%; background: var(--green); color: #fff; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+  .recipe-section-label { font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin: 12px 0 8px; }
+  .recipe-notes { margin-top: 12px; padding: 9px 11px; background: var(--bg2); border-radius: var(--r-sm); font-size: 12px; color: var(--muted); line-height: 1.5; }
+
   /* ── Equivalencias ── */
   .eq-search-wrap { margin-bottom: 12px; }
   .eq-search {
@@ -773,6 +807,7 @@
       <p class="next-meal-time" id="view-meal-time">7:00 – 10:00 am</p>
 
       <div class="group-grid" id="group-grid"></div>
+      <div id="recipe-btn-wrap"></div>
 
       <button class="log-btn" id="log-btn" onclick="goToRegister()">
         <span>➕</span> Registrar Desayuno
@@ -1073,6 +1108,15 @@
   </div>
 </div>
 
+<!-- RECIPE MODAL -->
+<div class="modal-overlay" id="recipe-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="recipe-modal-scroll" id="recipe-modal-content"></div>
+    <button class="log-btn" style="margin-top:16px" onclick="closeRecipeModal()">Cerrar</button>
+  </div>
+</div>
+
 <script>
 // ─── Config ──────────────────────────────────────────────────────────────────
 const API_BASE = 'https://meditrack-x8m8.onrender.com';
@@ -1106,6 +1150,7 @@ let recordingSeconds = 0;
 let audioBlob       = null;
 let pendingAnalysis = null;  // { portions, confidence, notes, identified_foods }
 let pendingDeleteId = null;
+const recipeCache = {};
 
 function todayMX() {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
@@ -1301,6 +1346,16 @@ function selectViewMeal(meal) {
       ? '✅ Ya registrado'
       : `🔒 Pendiente de orden`;
     btn.onclick = null;
+  }
+
+  // Recipe suggestion button
+  const recipeBtnWrap = document.getElementById('recipe-btn-wrap');
+  if (recipeBtnWrap) {
+    if (['desayuno','comida','cena'].includes(meal)) {
+      recipeBtnWrap.innerHTML = `<button class="recipe-hint-btn" id="recipe-hint-btn" onclick="suggestRecipe('${meal}')">💡 Ver 3 recetas para ${MEAL_LABELS[meal]}</button>`;
+    } else {
+      recipeBtnWrap.innerHTML = '';
+    }
   }
 }
 
@@ -1880,6 +1935,76 @@ function renderEqList() {
     }
   }
   list.innerHTML = html || `<div class="empty-state"><span>🔍</span><p>Sin resultados para "${query}"</p></div>`;
+}
+
+// ─── Recipe Suggestion ────────────────────────────────────────────────────────
+
+async function suggestRecipe(meal) {
+  if (!['desayuno','comida','cena'].includes(meal)) return;
+  if (recipeCache[meal]) { openRecipeModal(recipeCache[meal], meal); return; }
+
+  const btn = document.getElementById('recipe-hint-btn');
+  if (btn) { btn.classList.add('loading'); btn.innerHTML = '<span class="spinner"></span> Generando recetas...'; }
+
+  try {
+    const result = await api('/api/suggest-recipe', { method: 'POST', body: JSON.stringify({ meal_type: meal }) });
+    if (!result.recipes?.length) throw new Error('Respuesta incompleta');
+    recipeCache[meal] = result;
+    openRecipeModal(result, meal);
+  } catch (err) {
+    showToast('No se pudieron generar recetas: ' + err.message, 'error');
+  } finally {
+    const b = document.getElementById('recipe-hint-btn');
+    if (b) { b.classList.remove('loading'); b.innerHTML = `💡 Ver 3 recetas para ${MEAL_LABELS[meal]}`; }
+  }
+}
+
+function openRecipeModal(data, meal) {
+  const content = document.getElementById('recipe-modal-content');
+  const cardsHtml = (data.recipes || []).map((recipe, idx) => {
+    const ings = (recipe.ingredients || []).map(ing => `
+      <div class="recipe-ingredient">
+        <span class="recipe-ingredient-icon">${GROUP_ICONS[ing.group] || '🍽️'}</span>
+        <span class="recipe-ingredient-name">${ing.item}</span>
+        <span class="recipe-ingredient-amount">${ing.amount}</span>
+      </div>`).join('');
+    const steps = (recipe.steps || []).map((s, i) => `
+      <li class="recipe-step"><span class="recipe-step-num">${i+1}</span><span>${s}</span></li>`).join('');
+    const notes = recipe.notes ? `<div class="recipe-notes">💡 ${recipe.notes}</div>` : '';
+    return `
+      <div class="recipe-card" id="rcard-${idx}">
+        <div class="recipe-card-header" onclick="toggleRecipeCard(${idx})">
+          <span class="recipe-card-title">${recipe.recipe_name}</span>
+          <span class="recipe-card-chevron">▼</span>
+        </div>
+        <div class="recipe-card-body">
+          <p class="recipe-section-label">Ingredientes</p>
+          <div>${ings}</div>
+          <p class="recipe-section-label">Preparación</p>
+          <ol class="recipe-steps-list">${steps}</ol>
+          ${notes}
+        </div>
+      </div>`;
+  }).join('');
+
+  content.innerHTML = `
+    <p class="recipe-modal-title">Recetas para ${MEAL_LABELS[meal]}</p>
+    <p class="recipe-modal-sub">Toca una receta para verla</p>
+    ${cardsHtml}`;
+
+  document.getElementById('recipe-modal').classList.add('open');
+  content.scrollTop = 0;
+}
+
+function toggleRecipeCard(idx) {
+  const card = document.getElementById(`rcard-${idx}`);
+  const isOpen = card.classList.contains('open');
+  document.querySelectorAll('.recipe-card').forEach(c => c.classList.remove('open'));
+  if (!isOpen) card.classList.add('open');
+}
+
+function closeRecipeModal() {
+  document.getElementById('recipe-modal').classList.remove('open');
 }
 
 function showTab(tab) {
