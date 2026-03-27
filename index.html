@@ -738,6 +738,196 @@
     border-radius: 10px; letter-spacing: 0.3px;
   }
   .week-bar.future { background: var(--border); opacity: 0.5; }
+
+  /* ── ═══════════════════════ CONSULTA TAB ═══════════════════════ ─── */
+  .consulta-wrap { padding: 0 0 0; }
+
+  /* Date navigator */
+  .date-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 10px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .date-nav-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--bg2); color: var(--text);
+    font-size: 16px; display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .date-nav-btn:active { background: var(--border); }
+  .date-nav-btn:disabled { opacity: .35; cursor: default; }
+  .date-nav-label {
+    font-family: 'Fraunces', serif;
+    font-size: 16px; font-weight: 600; color: var(--text);
+    flex: 1; text-align: center;
+  }
+  .date-nav-today {
+    font-size: 10px; color: var(--accent); font-weight: 700;
+    letter-spacing: .5px; text-transform: uppercase;
+    display: block; text-align: center; margin-top: 1px;
+  }
+
+  /* Period selector */
+  .consulta-period-tabs {
+    display: flex; gap: 0;
+    background: var(--bg2);
+    margin: 12px 16px 0;
+    border-radius: var(--r-sm);
+    padding: 3px;
+  }
+  .consulta-period-tab {
+    flex: 1; padding: 7px;
+    border-radius: calc(var(--r-sm) - 2px);
+    font-size: 12px; font-weight: 600;
+    color: var(--muted); transition: all .2s; text-align: center;
+  }
+  .consulta-period-tab.active { background: var(--surface); color: var(--green); box-shadow: var(--shadow); }
+
+  /* Day table */
+  .day-table-card {
+    margin: 12px 16px; background: var(--surface);
+    border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .day-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .day-table {
+    width: 100%; border-collapse: collapse;
+    font-size: 12px;
+  }
+  .day-table thead tr:first-child th {
+    background: var(--green); color: #fff;
+    padding: 8px 6px; font-size: 11px; font-weight: 600;
+    letter-spacing: .3px; text-align: center;
+  }
+  .day-table thead tr:first-child th:first-child {
+    text-align: left; padding-left: 12px;
+  }
+  .day-table thead tr:nth-child(2) th {
+    background: var(--bg2); color: var(--muted);
+    padding: 5px 6px; font-size: 10px; font-weight: 600;
+    text-align: center; letter-spacing: .3px;
+    border-bottom: 1px solid var(--border);
+  }
+  .day-table thead tr:nth-child(2) th:first-child {
+    text-align: left; padding-left: 12px;
+  }
+  .day-table tbody tr { border-bottom: 1px solid var(--border); }
+  .day-table tbody tr:last-child { border-bottom: none; }
+  .day-table tbody td {
+    padding: 9px 6px; text-align: center;
+    font-size: 13px; vertical-align: middle;
+  }
+  .day-table tbody td:first-child {
+    text-align: left; padding-left: 12px;
+    font-size: 12px; font-weight: 600; color: var(--text2);
+    white-space: nowrap;
+  }
+  .day-table .plan-cell { color: var(--muted); font-size: 12px; }
+  .day-table .comio-cell {
+    font-weight: 700; font-family: 'Fraunces', serif; font-size: 15px;
+    cursor: pointer; border-radius: 6px;
+    transition: opacity .15s;
+    min-width: 38px;
+  }
+  .day-table .comio-cell:active { opacity: .7; }
+  .day-table .comio-cell.c-ok   { background: #D4EDDA; color: #1C5E2A; }
+  .day-table .comio-cell.c-low  { background: #FFF3CD; color: #856404; }
+  .day-table .comio-cell.c-over { background: #F8D7DA; color: #842029; }
+  .day-table .comio-cell.c-zero { color: var(--border); font-weight: 400; font-size: 13px; font-family: 'DM Sans', sans-serif; }
+  .day-table .comio-cell.c-na   { color: var(--border); font-size: 11px; font-family: 'DM Sans', sans-serif; }
+  .day-table .comio-cell.c-skip { background: none !important; color: var(--border) !important; cursor: default; }
+
+  /* Edit entry modal */
+  .edit-entry-modal .modal-sheet { padding-bottom: calc(24px + var(--safe-b)); }
+  .edit-entry-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+  }
+  .edit-meal-badge {
+    background: var(--green); color: #fff;
+    padding: 4px 12px; border-radius: 100px;
+    font-size: 11px; font-weight: 700; letter-spacing: .5px;
+  }
+  .edit-date-label { font-size: 12px; color: var(--muted); }
+  .edit-group-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    max-height: 55dvh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .edit-group-card {
+    background: var(--bg);
+    border-radius: var(--r-sm);
+    border: 1.5px solid var(--border);
+    padding: 12px 10px;
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .edit-group-icon { font-size: 22px; }
+  .edit-group-name { font-size: 10px; font-weight: 700; color: var(--text2); letter-spacing: .3px; text-transform: uppercase; }
+  .edit-group-plan { font-size: 10px; color: var(--muted); }
+  .edit-stepper { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
+  .edit-stepper-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--bg2); font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .1s;
+  }
+  .edit-stepper-btn:active { background: var(--border); }
+  .edit-stepper-val {
+    font-family: 'Fraunces', serif;
+    font-size: 22px; width: 30px; text-align: center; line-height: 1;
+  }
+
+  /* Week table */
+  .week-table-card {
+    margin: 12px 16px; background: var(--surface);
+    border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .week-table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .week-table {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+  .week-table thead th {
+    background: var(--green); color: #fff;
+    padding: 8px 6px; font-size: 11px; font-weight: 600;
+    text-align: center; letter-spacing: .3px;
+  }
+  .week-table thead th:first-child { text-align: left; padding-left: 12px; }
+  .week-table thead tr:nth-child(2) th {
+    background: var(--bg2); color: var(--muted);
+    padding: 5px 6px; font-size: 10px; font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .week-table thead tr:nth-child(2) th:first-child { text-align: left; padding-left: 12px; }
+  .week-table tbody tr { border-bottom: 1px solid var(--border); }
+  .week-table tbody tr:last-child { border-bottom: none; }
+  .week-table tbody td {
+    padding: 9px 6px; text-align: center; font-size: 13px; vertical-align: middle;
+  }
+  .week-table tbody td:first-child {
+    text-align: left; padding-left: 12px;
+    font-size: 12px; font-weight: 600; color: var(--text2); white-space: nowrap;
+  }
+  .week-table .wt-plan { color: var(--muted); font-size: 12px; }
+  .week-table .wt-val {
+    font-weight: 700; font-family: 'Fraunces', serif; font-size: 15px;
+    border-radius: 6px;
+  }
+  .week-table .wt-ok   { background: #D4EDDA; color: #1C5E2A; }
+  .week-table .wt-low  { background: #FFF3CD; color: #856404; }
+  .week-table .wt-over { background: #F8D7DA; color: #842029; }
+
+  /* Consulta summary strip */
+  .consulta-summary {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: var(--border);
+    margin: 12px 16px; border-radius: var(--r);
+    overflow: hidden; box-shadow: var(--shadow);
+  }
+  .cs-item {
+    background: var(--surface); padding: 14px 10px; text-align: center;
+  }
+  .cs-val { font-family: 'Fraunces', serif; font-size: 26px; color: var(--green); line-height: 1; }
+  .cs-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -975,69 +1165,129 @@
     </div>
   </div>
 
-  <!-- PROGRESO -->
+  <!-- CONSULTA -->
   <div class="screen" id="screen-progreso">
     <div class="screen-header">
       <p class="header-eyebrow">Seguimiento</p>
-      <h1 class="header-title">Tu progreso</h1>
-      <p class="header-sub" id="prog-sub">Semana actual</p>
+      <h1 class="header-title">Consulta</h1>
+      <p class="header-sub">Registro diario y semanal</p>
     </div>
 
-    <div class="prog-wrap">
-      <!-- Period tabs -->
-      <div class="period-tabs">
-        <button class="period-tab active" onclick="selectPeriod('semana')" id="pt-semana">Semana</button>
-        <button class="period-tab" onclick="selectPeriod('mes')" id="pt-mes">Mes</button>
-        <button class="period-tab" onclick="selectPeriod('historial')" id="pt-historial">Historial</button>
+    <div class="consulta-wrap">
+      <!-- Period selector -->
+      <div class="consulta-period-tabs" style="margin-top:12px">
+        <button class="consulta-period-tab active" onclick="selectConsultaPeriod('dia')" id="cpt-dia">Día</button>
+        <button class="consulta-period-tab" onclick="selectConsultaPeriod('semana')" id="cpt-semana">Semana</button>
+        <button class="consulta-period-tab" onclick="selectConsultaPeriod('mes')" id="cpt-mes">Mes</button>
       </div>
 
-      <div id="prog-semana">
-        <!-- Streak -->
-        <div class="streak-card" id="streak-card">
-          <div class="streak-card-label">Racha actual</div>
-          <div class="streak-card-num" id="sc-num">0</div>
-          <div class="streak-card-sub" id="sc-sub">días consecutivos completados</div>
-          <div class="streak-badges">
-            <div class="streak-badge-item">
-              <div class="streak-badge-val" id="sc-best">0</div>
-              <div class="streak-badge-lbl">🏆 mejor racha</div>
-            </div>
-            <div class="streak-badge-item">
-              <div class="streak-badge-val" id="sc-total">0</div>
-              <div class="streak-badge-lbl">✅ días completos</div>
-            </div>
-            <div class="streak-badge-item">
-              <div class="streak-badge-val" id="sc-avg">0%</div>
-              <div class="streak-badge-lbl">📊 promedio semana</div>
-            </div>
+      <!-- DAY VIEW -->
+      <div id="consulta-dia">
+        <!-- Date navigator -->
+        <div class="date-nav" style="position:relative;top:0">
+          <button class="date-nav-btn" onclick="changeConsultaDate(-1)">◀</button>
+          <div>
+            <div class="date-nav-label" id="consulta-date-label">—</div>
+            <span class="date-nav-today hidden" id="consulta-today-badge">HOY</span>
+          </div>
+          <button class="date-nav-btn" onclick="changeConsultaDate(1)" id="consulta-next-btn">▶</button>
+        </div>
+
+        <!-- Day table -->
+        <div class="day-table-card">
+          <div class="day-table-scroll">
+            <table class="day-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="min-width:80px">Grupo</th>
+                  <th colspan="2">🌅 Desayuno</th>
+                  <th colspan="2">☀️ Comida</th>
+                  <th colspan="2">🌙 Cena</th>
+                </tr>
+                <tr>
+                  <th>Plan</th><th>Comió</th>
+                  <th>Plan</th><th>Comió</th>
+                  <th>Plan</th><th>Comió</th>
+                </tr>
+              </thead>
+              <tbody id="day-table-body">
+                <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando…</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Week bar chart -->
-        <div class="week-chart">
-          <div class="week-chart-title">Cumplimiento 7 días</div>
+        <p style="font-size:11px;color:var(--muted);text-align:center;padding:4px 16px 12px">Toca cualquier celda <strong>Comió</strong> para editar</p>
+
+        <!-- Day summary -->
+        <div class="consulta-summary" id="day-summary" style="display:none">
+          <div class="cs-item"><div class="cs-val" id="ds-meals">0/3</div><div class="cs-lbl">comidas</div></div>
+          <div class="cs-item"><div class="cs-val" id="ds-pct">0%</div><div class="cs-lbl">cumplimiento</div></div>
+          <div class="cs-item"><div class="cs-val" id="ds-streak">0</div><div class="cs-lbl">racha 🔥</div></div>
+        </div>
+      </div>
+
+      <!-- WEEK VIEW -->
+      <div id="consulta-semana" class="hidden">
+        <div style="padding:12px 16px 0;display:flex;align-items:center;justify-content:space-between">
+          <button class="date-nav-btn" onclick="changeConsultaWeek(-1)">◀</button>
+          <div class="date-nav-label" id="consulta-week-label" style="font-size:14px">—</div>
+          <button class="date-nav-btn" onclick="changeConsultaWeek(1)" id="consulta-week-next">▶</button>
+        </div>
+
+        <!-- Streak summary -->
+        <div class="consulta-summary" id="week-summary" style="margin-top:12px">
+          <div class="cs-item"><div class="cs-val" id="ws-streak">0</div><div class="cs-lbl">racha 🔥</div></div>
+          <div class="cs-item"><div class="cs-val" id="ws-complete">0/7</div><div class="cs-lbl">días completos</div></div>
+          <div class="cs-item"><div class="cs-val" id="ws-avg">0%</div><div class="cs-lbl">promedio</div></div>
+        </div>
+
+        <!-- Week bar chart (kept) -->
+        <div class="week-chart" style="margin:0 16px 12px">
+          <div class="week-chart-title">Cumplimiento diario</div>
           <div class="week-bars" id="week-bars">
             <div class="empty-state" style="width:100%"><p>Cargando...</p></div>
           </div>
         </div>
 
-        <!-- Group compliance (today) -->
-        <div class="group-progress">
-          <p class="week-chart-title">Grupos hoy</p>
-          <div id="group-progress-list"></div>
+        <!-- Week totals table -->
+        <div class="week-table-card">
+          <div class="week-table-scroll">
+            <table class="week-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="min-width:80px">Grupo</th>
+                  <th colspan="2">🌅 Desayuno</th>
+                  <th colspan="2">☀️ Comida</th>
+                  <th colspan="2">🌙 Cena</th>
+                </tr>
+                <tr>
+                  <th class="wt-plan">Plan</th><th>Total</th>
+                  <th class="wt-plan">Plan</th><th>Total</th>
+                  <th class="wt-plan">Plan</th><th>Total</th>
+                </tr>
+              </thead>
+              <tbody id="week-table-body">
+                <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando…</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
-      <div id="prog-mes" class="hidden">
-        <div class="card">
+      <!-- MONTH VIEW -->
+      <div id="consulta-mes" class="hidden">
+        <div class="card" style="margin:12px 16px">
           <p class="card-label">Resumen mensual</p>
           <div id="monthly-summary" style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">Cargando...</div>
         </div>
-      </div>
-
-      <div id="prog-historial" class="hidden">
-        <p class="card-label" style="padding:0 0 8px">Últimas comidas</p>
-        <div class="history-list" id="history-list">
+        <!-- Group progress bars for month -->
+        <div class="group-progress" style="margin:0 16px 12px">
+          <p class="week-chart-title">Grupos este mes</p>
+          <div id="month-group-progress"></div>
+        </div>
+        <p class="card-label" style="padding:0 16px 8px">Últimas comidas</p>
+        <div class="history-list" style="margin:0 16px" id="history-list">
           <div class="empty-state"><span>🍽️</span><p>No hay registros aún</p></div>
         </div>
       </div>
@@ -1083,7 +1333,7 @@
     </button>
     <button class="tab-btn" onclick="showTab('progreso')" id="tab-progreso">
       <span class="tab-icon">📊</span>
-      <span>Progreso</span>
+      <span>Consulta</span>
     </button>
     <button class="tab-btn" onclick="showTab('equivalencias')" id="tab-equivalencias">
       <span class="tab-icon">📋</span>
@@ -1114,6 +1364,25 @@
     <div class="modal-handle"></div>
     <div class="recipe-modal-scroll" id="recipe-modal-content"></div>
     <button class="log-btn" style="margin-top:16px" onclick="closeRecipeModal()">Cerrar</button>
+  </div>
+</div>
+
+<!-- EDIT ENTRY MODAL -->
+<div class="modal-overlay edit-entry-modal" id="edit-entry-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="edit-entry-header">
+      <span class="edit-meal-badge" id="edit-meal-badge">Desayuno</span>
+      <span class="edit-date-label" id="edit-date-label">—</span>
+    </div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Ajusta las porciones de cada grupo:</p>
+    <div class="edit-group-grid" id="edit-group-grid"></div>
+    <button class="save-btn" style="margin-top:14px" onclick="saveEditEntry()">
+      <span>✅</span> Guardar corrección
+    </button>
+    <button style="width:100%;padding:10px;text-align:center;font-size:13px;color:var(--muted);margin-top:4px" onclick="closeEditModal()">
+      Cancelar
+    </button>
   </div>
 </div>
 
@@ -1695,41 +1964,236 @@ function goToRegister() {
   if (todayData?.nextMeal) selectRegMeal(todayData.nextMeal);
 }
 
-// ─── PROGRESO TAB ─────────────────────────────────────────────────────────────
-async function loadProgresoData() {
+// ─── CONSULTA TAB ─────────────────────────────────────────────────────────────
+let consultaDate    = todayMX();
+let consultaWeekOffset = 0;  // 0 = current week, -1 = last week, etc.
+let editingMeal     = null;
+let editingDate     = null;
+let editPortions    = {};
+let lastDayData     = null;   // cached for edit modal
+
+function selectConsultaPeriod(period) {
+  ['dia','semana','mes'].forEach(p => {
+    document.getElementById(`cpt-${p}`).className = 'consulta-period-tab' + (p === period ? ' active' : '');
+    document.getElementById(`consulta-${p}`).className = p === period ? '' : 'hidden';
+  });
+  if (period === 'dia')    loadConsultaDay(consultaDate);
+  if (period === 'semana') loadConsultaWeek();
+  if (period === 'mes')    loadConsultaMes();
+}
+
+// ── Day view ──
+function changeConsultaDate(delta) {
+  const d = new Date(consultaDate + 'T12:00:00');
+  d.setDate(d.getDate() + delta);
+  consultaDate = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(d);
+  loadConsultaDay(consultaDate);
+}
+
+async function loadConsultaDay(date) {
+  const todayStr = todayMX();
+  // Update nav UI
+  const label  = document.getElementById('consulta-date-label');
+  const todayBadge = document.getElementById('consulta-today-badge');
+  const nextBtn = document.getElementById('consulta-next-btn');
+  const d = new Date(date + 'T12:00:00');
+  const DAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  label.textContent = `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  todayBadge.classList.toggle('hidden', date !== todayStr);
+  nextBtn.disabled = date >= todayStr;
+
+  const body = document.getElementById('day-table-body');
+  body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando…</td></tr>`;
+
   try {
-    const [streak, week] = await Promise.all([
-      api('/api/stats/streak'),
-      api('/api/stats/week'),
-    ]);
-    renderStreakCard(streak, week);
-    renderWeekChart(week);
-    renderGroupProgress();
+    const data = await api(`/api/today?date=${date}`);
+    lastDayData = data;
+    renderDayTable(data, date);
+    renderDaySummary(data, date);
   } catch (err) {
-    showToast('Error cargando progreso', 'error');
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">Error cargando datos</td></tr>`;
   }
 }
 
-function renderStreakCard(streak, week) {
-  document.getElementById('sc-num').textContent   = streak.currentStreak;
-  document.getElementById('sc-best').textContent  = streak.bestStreak;
-  document.getElementById('sc-total').textContent = streak.totalCompleteDays;
-  document.getElementById('sc-avg').textContent   = `${week.avgCompliance}%`;
-  document.getElementById('sc-sub').textContent =
-    streak.currentStreak === 0
-      ? 'Empieza hoy tu racha'
-      : streak.currentStreak === 1
-        ? 'día consecutivo completado 🎉'
-        : 'días consecutivos completados 🔥';
+function renderDayTable(data, date) {
+  const body = document.getElementById('day-table-body');
+  const GROUPS = ['leche','carne','fruta','verdura','cereales','leguminosas','grasas'];
+  const MEALS  = ['desayuno','comida','cena'];
+
+  body.innerHTML = GROUPS.map(group => {
+    const cells = MEALS.map(meal => {
+      const plan = MEAL_PLAN[meal][group] || 0;
+      // find consumed for this meal
+      const mealSummary = data.mealSummary?.find(m => m.meal === meal);
+      const got  = mealSummary?.portions?.[group] || 0;
+
+      const planCell = `<td class="plan-cell">${plan}</td>`;
+      let cls, display;
+      if (plan === 0 && got === 0) {
+        cls = 'c-na'; display = '—';
+      } else if (got === 0) {
+        cls = 'c-zero'; display = '0';
+      } else if (got > plan) {
+        cls = 'c-over'; display = got;
+      } else if (got >= plan) {
+        cls = 'c-ok'; display = got;
+      } else {
+        cls = 'c-low'; display = got;
+      }
+      return `${planCell}<td class="comio-cell ${cls}" onclick="openEditModal('${meal}','${date}')">${display}</td>`;
+    }).join('');
+
+    return `<tr>
+      <td>${GROUP_ICONS[group]} ${GROUP_LABELS[group]}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
 }
 
-function renderWeekChart(week) {
+function renderDaySummary(data, date) {
+  const todayStr = todayMX();
+  document.getElementById('day-summary').style.display = '';
+  const mealsLogged = data.loggedMeals?.length || 0;
+  document.getElementById('ds-meals').textContent = `${mealsLogged}/3`;
+
+  let total = 0, hit = 0;
+  for (const [g, t] of Object.entries(DAILY_TOTALS)) {
+    total += t;
+    hit   += Math.min(data.consumed?.[g] || 0, t);
+  }
+  const pct = total > 0 ? Math.round((hit/total)*100) : 0;
+  document.getElementById('ds-pct').textContent = `${pct}%`;
+
+  // streak shown only for today
+  if (date === todayStr) {
+    api('/api/stats/streak').then(s => {
+      document.getElementById('ds-streak').textContent = s.currentStreak;
+    }).catch(() => {});
+  } else {
+    document.getElementById('ds-streak').textContent = '—';
+  }
+}
+
+// ── Edit modal ──
+function openEditModal(meal, date) {
+  editingMeal = meal;
+  editingDate = date;
+  const dayData = lastDayData || {};
+
+  const mealSummary = dayData.mealSummary?.find(m => m.meal === meal);
+  const plan = MEAL_PLAN[meal];
+
+  // Seed with current portions
+  editPortions = {};
+  const GROUPS = ['leche','carne','fruta','verdura','cereales','leguminosas','grasas'];
+  GROUPS.forEach(g => {
+    editPortions[g] = mealSummary?.portions?.[g] || 0;
+  });
+
+  document.getElementById('edit-meal-badge').textContent = MEAL_LABELS[meal];
+  const d = new Date(date + 'T12:00:00');
+  const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('edit-date-label').textContent =
+    `${d.getDate()} ${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+  const grid = document.getElementById('edit-group-grid');
+  grid.innerHTML = GROUPS.map(g => {
+    const planQty = plan[g] || 0;
+    return `<div class="edit-group-card">
+      <span class="edit-group-icon">${GROUP_ICONS[g]}</span>
+      <span class="edit-group-name">${GROUP_LABELS[g]}</span>
+      <span class="edit-group-plan">Meta: ${planQty}</span>
+      <div class="edit-stepper">
+        <button class="edit-stepper-btn" onclick="adjustEdit('${g}',-0.5)">−</button>
+        <div class="edit-stepper-val" id="epval-${g}">${editPortions[g]}</div>
+        <button class="edit-stepper-btn" onclick="adjustEdit('${g}',0.5)">+</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('edit-entry-modal').classList.add('open');
+}
+
+function adjustEdit(group, delta) {
+  editPortions[group] = Math.max(0, (editPortions[group] || 0) + delta);
+  const el = document.getElementById(`epval-${group}`);
+  if (el) el.textContent = editPortions[group];
+}
+
+async function saveEditEntry() {
+  if (!editingMeal || !editingDate) return;
+  try {
+    await api('/api/logs/correct', {
+      method: 'POST',
+      body: JSON.stringify({ date: editingDate, meal_type: editingMeal, portions: editPortions }),
+    });
+    closeEditModal();
+    showToast('Corrección guardada ✅', 'success');
+    loadConsultaDay(editingDate);
+    if (editingDate === todayMX()) loadTodayData();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+  }
+}
+
+function closeEditModal() {
+  document.getElementById('edit-entry-modal').classList.remove('open');
+  editingMeal = null; editingDate = null; editPortions = {};
+}
+
+// ── Week view ──
+function changeConsultaWeek(delta) {
+  consultaWeekOffset += delta;
+  if (consultaWeekOffset > 0) consultaWeekOffset = 0;
+  loadConsultaWeek();
+}
+
+async function loadConsultaWeek() {
   const today = todayMX();
-  // Build Mon–Sun of current week
   const todayDate = new Date(today + 'T12:00:00');
-  const dow = todayDate.getDay(); // 0=Sun
+  const dow = todayDate.getDay();
   const monday = new Date(todayDate);
-  monday.setDate(todayDate.getDate() - (dow === 0 ? 6 : dow - 1));
+  monday.setDate(todayDate.getDate() - (dow === 0 ? 6 : dow - 1) + (consultaWeekOffset * 7));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  const fmt = d => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(d);
+  const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('consulta-week-label').textContent =
+    `${monday.getDate()} ${MONTHS[monday.getMonth()]} – ${sunday.getDate()} ${MONTHS[sunday.getMonth()]}`;
+  document.getElementById('consulta-week-next').disabled = consultaWeekOffset >= 0;
+
+  const from = fmt(monday);
+  const to   = fmt(sunday);
+
+  try {
+    const [dailyData, streak] = await Promise.all([
+      api(`/api/stats/daily?from=${from}&to=${to}`),
+      api('/api/stats/streak'),
+    ]);
+
+    // Streak summary
+    document.getElementById('ws-streak').textContent = streak.currentStreak;
+    const completeDays = dailyData.filter(d => d.allMealsDone).length;
+    document.getElementById('ws-complete').textContent = `${completeDays}/7`;
+    const avg = dailyData.length > 0
+      ? Math.round(dailyData.reduce((s,d) => s+d.compliance,0)/dailyData.length) : 0;
+    document.getElementById('ws-avg').textContent = `${avg}%`;
+
+    // Bar chart
+    renderWeekChart({ days: dailyData }, monday, from, to);
+
+    // Week totals table - fetch full logs for the week
+    const logs = await api(`/api/logs?from=${from}&to=${to}&limit=200`);
+    renderWeekTable(logs, monday);
+  } catch (err) {
+    showToast('Error cargando semana', 'error');
+  }
+}
+
+function renderWeekChart(week, monday, from, to) {
+  const today = todayMX();
   const WEEK_LABELS = ['L','M','M','J','V','S','D'];
   const days7 = [];
   for (let i = 0; i < 7; i++) {
@@ -1755,23 +2219,102 @@ function renderWeekChart(week) {
   }).join('');
 }
 
-function renderGroupProgress() {
-  if (!todayData) return;
-  const list = document.getElementById('group-progress-list');
-  list.innerHTML = Object.entries(DAILY_TOTALS).map(([group, total]) => {
-    const consumed = todayData.consumed[group] || 0;
-    const pct  = total > 0 ? Math.min(Math.round((consumed/total)*100), 100) : 0;
-    const over = consumed > total;
-    return `<div class="gp-row">
-      <div class="gp-header">
-        <span class="gp-name">${GROUP_ICONS[group]} ${GROUP_LABELS[group]}</span>
-        <span class="gp-count">${consumed}/${total} porciones</span>
-      </div>
-      <div class="gp-bar">
-        <div class="gp-fill ${over ? 'over' : pct === 100 ? 'perfect' : ''}" style="width:${pct}%"></div>
-      </div>
-    </div>`;
+function renderWeekTable(logs, monday) {
+  const GROUPS = ['leche','carne','fruta','verdura','cereales','leguminosas','grasas'];
+  const MEALS  = ['desayuno','comida','cena'];
+  // Days in the week
+  const days7 = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    days7.push(new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(d));
+  }
+  const weekDays = days7.length;
+
+  // Sum consumed per meal per group
+  const totals = {};
+  MEALS.forEach(meal => {
+    totals[meal] = {};
+    GROUPS.forEach(g => { totals[meal][g] = 0; });
+  });
+  for (const log of logs) {
+    if (!MEALS.includes(log.meal_type)) continue;
+    if (!days7.includes(log.date)) continue;
+    if (log.portions) {
+      GROUPS.forEach(g => {
+        totals[log.meal_type][g] += log.portions[g] || 0;
+      });
+    }
+  }
+
+  const body = document.getElementById('week-table-body');
+  body.innerHTML = GROUPS.map(group => {
+    const cells = MEALS.map(meal => {
+      const plan    = (MEAL_PLAN[meal][group] || 0) * weekDays;
+      const got     = totals[meal][group] || 0;
+      const planCell = `<td class="wt-plan">${plan}</td>`;
+      let cls = '';
+      if (got > plan)       cls = 'wt-over';
+      else if (got >= plan) cls = 'wt-ok';
+      else if (got > 0)     cls = 'wt-low';
+      return `${planCell}<td class="wt-val ${cls}">${got}</td>`;
+    }).join('');
+
+    return `<tr>
+      <td>${GROUP_ICONS[group]} ${GROUP_LABELS[group]}</td>
+      ${cells}
+    </tr>`;
   }).join('');
+}
+
+// ── Month view ──
+async function loadConsultaMes() {
+  try {
+    const todayStr = todayMX();
+    const from = todayStr.substring(0, 7) + '-01';
+    const to   = todayStr;
+    const [data, logs] = await Promise.all([
+      api(`/api/stats/daily?from=${from}&to=${to}`),
+      api(`/api/logs?from=${from}&to=${to}&limit=200`),
+    ]);
+    const el      = document.getElementById('monthly-summary');
+    const total   = data.length;
+    const complete = data.filter(d => d.allMealsDone).length;
+    const avg = total > 0 ? Math.round(data.reduce((s,d) => s+d.compliance,0)/total) : 0;
+    el.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center">
+        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--green)">${complete}</div><div style="font-size:11px;color:var(--muted)">días completos</div></div>
+        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--accent)">${total}</div><div style="font-size:11px;color:var(--muted)">días registrados</div></div>
+        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--gold)">${avg}%</div><div style="font-size:11px;color:var(--muted)">cumplimiento</div></div>
+      </div>`;
+
+    // Month group progress
+    const GROUPS = ['leche','carne','fruta','verdura','cereales','leguminosas','grasas'];
+    const consumed = {};
+    GROUPS.forEach(g => { consumed[g] = 0; });
+    for (const log of logs) {
+      if (log.portions) GROUPS.forEach(g => { consumed[g] += log.portions[g] || 0; });
+    }
+    const daysInRange = total || 1;
+    const list = document.getElementById('month-group-progress');
+    list.innerHTML = GROUPS.map(group => {
+      const monthTarget = DAILY_TOTALS[group] * daysInRange;
+      const got  = consumed[group];
+      const pct  = monthTarget > 0 ? Math.min(Math.round((got/monthTarget)*100), 100) : 0;
+      const over = got > monthTarget;
+      return `<div class="gp-row">
+        <div class="gp-header">
+          <span class="gp-name">${GROUP_ICONS[group]} ${GROUP_LABELS[group]}</span>
+          <span class="gp-count">${got}/${monthTarget}</span>
+        </div>
+        <div class="gp-bar">
+          <div class="gp-fill ${over ? 'over' : pct === 100 ? 'perfect' : ''}" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+    }).join('');
+
+    renderHistory(logs.slice(0, 30));
+  } catch(err) {}
 }
 
 async function loadHistory() {
@@ -1787,6 +2330,7 @@ function renderHistory(logs) {
     list.innerHTML = `<div class="empty-state"><span>🍽️</span><p>No hay registros aún</p></div>`;
     return;
   }
+  const input_icons = { foto_menu:'📋', foto_comida:'📸', voz:'🎙️', manual:'✏️' };
   list.innerHTML = logs.map(log => {
     const d    = new Date(log.logged_at);
     const time = d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' });
@@ -1797,7 +2341,6 @@ function renderHistory(logs) {
           .map(([g,q]) => `<span class="history-chip">${GROUP_ICONS[g]} ${q}</span>`)
           .join('')
       : '';
-    const input_icons = { foto_menu:'📋', foto_comida:'📸', voz:'🎙️', manual:'✏️' };
     return `<div class="history-item">
       <div class="history-icon">${MEAL_ICONS[log.meal_type] || '🍽️'}</div>
       <div class="history-content">
@@ -1814,34 +2357,6 @@ function renderHistory(logs) {
       </div>
     </div>`;
   }).join('');
-}
-
-async function loadMonthlySummary() {
-  try {
-    const todayStr = todayMX();
-    const from = todayStr.substring(0, 7) + '-01';
-    const to   = todayStr;
-    const data = await api(`/api/stats/daily?from=${from}&to=${to}`);
-    const el   = document.getElementById('monthly-summary');
-    const total = data.length;
-    const complete = data.filter(d => d.allMealsDone).length;
-    const avg = total > 0 ? Math.round(data.reduce((s,d) => s+d.compliance,0)/total) : 0;
-    el.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;text-align:center">
-        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--green)">${complete}</div><div style="font-size:11px;color:var(--muted)">días completos</div></div>
-        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--accent)">${total}</div><div style="font-size:11px;color:var(--muted)">días registrados</div></div>
-        <div><div style="font-family:'Fraunces',serif;font-size:36px;color:var(--gold)">${avg}%</div><div style="font-size:11px;color:var(--muted)">cumplimiento</div></div>
-      </div>`;
-  } catch(err) {}
-}
-
-function selectPeriod(period) {
-  ['semana','mes','historial'].forEach(p => {
-    document.getElementById(`pt-${p}`).className = 'period-tab' + (p === period ? ' active' : '');
-    document.getElementById(`prog-${p}`).className = p === period ? '' : 'hidden';
-  });
-  if (period === 'historial') loadHistory();
-  if (period === 'mes') loadMonthlySummary();
 }
 
 // ─── Delete Modal ──────────────────────────────────────────────────────────────
@@ -2013,8 +2528,8 @@ function showTab(tab) {
     document.getElementById(`tab-${t}`).className = 'tab-btn' + (t === tab ? ' active' : '');
   });
   if (tab === 'progreso') {
-    loadProgresoData();
-    selectPeriod('semana');
+    consultaDate = todayMX();
+    selectConsultaPeriod('dia');
   }
   if (tab === 'registrar') renderRegisterState();
   if (tab === 'equivalencias') loadEquivalencias();

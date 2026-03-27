@@ -56,7 +56,7 @@ function todayMX() {
 
 app.get('/api/today', requireAuth, async (req, res) => {
   try {
-    const today = todayMX();
+    const today = req.query.date || todayMX();
 
     const { data: logs, error } = await supabase
       .from('meal_logs')
@@ -190,6 +190,63 @@ app.delete('/api/logs/:id', requireAuth, async (req, res) => {
     if (error) throw error;
     res.json({ ok: true });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH – update portions of a single log entry
+app.patch('/api/logs/:id', requireAuth, async (req, res) => {
+  try {
+    const { portions } = req.body;
+    if (!portions) return res.status(400).json({ error: 'portions requerido' });
+    const { data, error } = await supabase
+      .from('meal_logs')
+      .update({ portions })
+      .eq('id', req.params.id)
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/logs/correct – replace all logs for a meal+date with a single corrected entry
+app.post('/api/logs/correct', requireAuth, async (req, res) => {
+  try {
+    const { date, meal_type, portions } = req.body;
+    if (!date || !meal_type || !portions) {
+      return res.status(400).json({ error: 'date, meal_type y portions son requeridos' });
+    }
+
+    // Delete all existing logs for this meal+date
+    const { error: delErr } = await supabase
+      .from('meal_logs')
+      .delete()
+      .eq('date', date)
+      .eq('meal_type', meal_type);
+    if (delErr) throw delErr;
+
+    // Only insert if any portion > 0
+    const hasAny = Object.values(portions).some(v => v > 0);
+    if (!hasAny) return res.json({ ok: true, cleared: true });
+
+    const { data, error } = await supabase
+      .from('meal_logs')
+      .insert({
+        meal_type,
+        portions,
+        input_type: 'manual',
+        date,
+        logged_at: new Date().toISOString(),
+      })
+      .select()
+      .single();
+    if (error) throw error;
+    res.json(data);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
