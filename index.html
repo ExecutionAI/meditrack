@@ -1491,7 +1491,12 @@ let pendingDeleteId = null;
 const recipeCache = {};
 
 function todayMX() {
-  return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+  try {
+    return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Mexico_City' }).format(new Date());
+  } catch(e) {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
 }
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
@@ -2128,17 +2133,25 @@ function changeConsultaDate(delta) {
 }
 
 async function loadConsultaDay(date) {
+  // Guard: if date is missing or invalid, fall back to today
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) date = todayMX();
+  consultaDate = date;
+
   const todayStr = todayMX();
-  // Update nav UI
-  const label  = document.getElementById('consulta-date-label');
+  const label    = document.getElementById('consulta-date-label');
   const todayBadge = document.getElementById('consulta-today-badge');
-  const nextBtn = document.getElementById('consulta-next-btn');
+  const nextBtn  = document.getElementById('consulta-next-btn');
+
   const d = new Date(date + 'T12:00:00');
-  const DAYS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  const DAYS   = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
   const MONTHS = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-  label.textContent = `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  if (!isNaN(d.getTime())) {
+    label.textContent = `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  } else {
+    label.textContent = date;
+  }
   todayBadge.classList.toggle('hidden', date !== todayStr);
-  nextBtn.disabled = date >= todayStr;
+  if (nextBtn) nextBtn.disabled = date >= todayStr;
 
   const body = document.getElementById('day-table-body');
   body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Cargando…</td></tr>`;
@@ -2149,7 +2162,10 @@ async function loadConsultaDay(date) {
     renderDayTable(data, date);
     renderDaySummary(data, date);
   } catch (err) {
-    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">Error cargando datos</td></tr>`;
+    body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">
+      ${err.message || 'Error cargando datos'}
+      <br><button onclick="loadConsultaDay('${date}')" style="margin-top:8px;font-size:12px;color:var(--accent);text-decoration:underline;background:none;border:none;cursor:pointer">Reintentar</button>
+    </td></tr>`;
   }
 }
 
