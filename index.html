@@ -131,7 +131,7 @@
   /* ── Shared Header ─────────────────────────────────────────────────── */
   .screen-header {
     background: var(--green);
-    padding: 52px 24px 24px;
+    padding: 44px 24px 16px;
     position: relative; overflow: hidden;
   }
   .screen-header::after {
@@ -251,29 +251,91 @@
   }
   .next-meal-time { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
 
-  /* Food group chips */
-  .group-grid {
-    display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+  /* ── Entry rows (main screen direct registration) ───────────────── */
+  .entry-card {
+    background: var(--surface);
+    border-radius: var(--r);
+    margin: 10px 16px 0;
+    box-shadow: var(--shadow);
+    overflow: hidden;
   }
-  .group-chip {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--bg); border-radius: var(--r-sm);
-    padding: 10px 12px; border: 1.5px solid var(--border);
-    transition: border-color .2s, background .2s;
+  .entry-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
   }
-  .group-chip.done { background: #EAF4EB; border-color: #A8D5AC; }
-  .group-chip.over { background: #FFF3F0; border-color: #FFBCA8; }
-  .group-chip-icon { font-size: 20px; flex-shrink: 0; }
-  .group-chip-info { flex: 1; min-width: 0; }
-  .group-chip-name { font-size: 11px; font-weight: 600; color: var(--text2); }
-  .group-chip-count {
+  .entry-meal-name {
     font-family: 'Fraunces', serif;
-    font-size: 18px; color: var(--text); line-height: 1;
+    font-size: 22px; letter-spacing: -.5px; line-height: 1;
   }
-  .group-chip-count span { font-size: 11px; color: var(--muted); font-family: 'DM Sans', sans-serif; }
-  .group-chip-check { font-size: 16px; }
+  .entry-meal-time { font-size: 11px; color: var(--muted); margin-top: 3px; }
+  .entry-status {
+    font-size: 10px; font-weight: 700; letter-spacing: .5px;
+    padding: 4px 11px; border-radius: 100px; text-transform: uppercase;
+    flex-shrink: 0;
+  }
+  .entry-status.es-next     { background: var(--accent); color: #fff; }
+  .entry-status.es-done     { background: #D4EDDA; color: #1C5E2A; }
+  .entry-status.es-locked   { background: var(--bg2); color: var(--muted); }
 
-  /* Log button */
+  .entry-list { display: flex; flex-direction: column; }
+  .entry-row {
+    display: flex; align-items: center;
+    padding: 11px 14px; gap: 10px;
+    border-bottom: 1px solid var(--border);
+    transition: background .2s;
+  }
+  .entry-row:last-child { border-bottom: none; }
+  .entry-row.er-ok   { background: #EDF7EF; }
+  .entry-row.er-low  { background: #FFFBF0; }
+  .entry-row.er-over { background: #FFF2F2; }
+  .er-icon { font-size: 22px; width: 30px; text-align: center; flex-shrink: 0; }
+  .er-info { flex: 1; min-width: 0; }
+  .er-name { font-size: 14px; font-weight: 600; color: var(--text); }
+  .er-plan { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .er-stepper { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+  .er-btn {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--bg2); color: var(--text);
+    font-size: 26px; line-height: 1;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .1s, transform .1s;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none; touch-action: manipulation;
+  }
+  .er-btn:active { background: var(--border); transform: scale(0.88); }
+  .er-val {
+    font-family: 'Fraunces', serif;
+    font-size: 28px; font-weight: 700;
+    width: 44px; text-align: center; line-height: 1;
+    transition: color .15s;
+  }
+  .er-val.v-ok   { color: #1C5E2A; }
+  .er-val.v-over { color: #842029; }
+  .er-val.v-zero { color: #C8C0B5; }
+
+  /* Save entry button (sticky above tab bar) */
+  .save-entry-wrap {
+    padding: 10px 16px 6px;
+    position: sticky;
+    bottom: calc(var(--tab-h) + var(--safe-b) + 6px);
+    z-index: 20;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+  }
+  .save-entry-btn {
+    width: 100%; padding: 17px;
+    background: var(--green); color: #fff;
+    border-radius: var(--r); font-size: 16px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    box-shadow: 0 4px 20px rgba(28,58,43,0.3);
+    transition: transform .15s, opacity .15s;
+    touch-action: manipulation;
+  }
+  .save-entry-btn:active { transform: scale(0.98); opacity: .9; }
+  .save-entry-btn.se-done { background: var(--gold); color: var(--green); box-shadow: 0 2px 8px rgba(212,168,67,0.25); }
+  .save-entry-btn.se-completed { background: var(--gold); color: var(--green); box-shadow: none; pointer-events: none; }
+
+  /* Log button (kept for Registrar tab) */
   .log-btn {
     width: 100%; padding: 16px;
     background: var(--green);
@@ -989,22 +1051,29 @@
       <button class="meal-tab" onclick="selectViewMeal('colacion')" id="itab-colacion">🍎 Colación</button>
     </div>
 
-    <div class="next-meal-card" id="next-meal-card">
-      <div id="next-meal-tag-wrap">
-        <span class="next-meal-tag" id="next-meal-tag">⬆ Siguiente</span>
+    <!-- Entry card: meal header + group rows -->
+    <div class="entry-card" id="entry-card">
+      <div class="entry-card-header">
+        <div>
+          <h2 class="entry-meal-name" id="entry-meal-name">Desayuno</h2>
+          <p class="entry-meal-time" id="entry-meal-time">7:00 – 10:00 am</p>
+        </div>
+        <span class="entry-status" id="entry-status-badge"></span>
       </div>
-      <h2 class="next-meal-name" id="view-meal-name">Desayuno</h2>
-      <p class="next-meal-time" id="view-meal-time">7:00 – 10:00 am</p>
+      <div class="entry-list" id="entry-list"></div>
+    </div>
 
-      <div class="group-grid" id="group-grid"></div>
-      <div id="recipe-btn-wrap"></div>
+    <!-- Recipe hint -->
+    <div id="recipe-btn-wrap" style="padding:0 16px;margin-top:10px"></div>
 
-      <button class="log-btn" id="log-btn" onclick="goToRegister()">
-        <span>➕</span> Registrar Desayuno
+    <!-- Sticky save button -->
+    <div class="save-entry-wrap" id="save-entry-wrap">
+      <button class="save-entry-btn" id="save-entry-btn" onclick="saveDirectEntry()">
+        ✅ Guardar Desayuno
       </button>
     </div>
 
-    <div class="today-compliance card" id="today-compliance-card" style="display:none">
+    <div class="today-compliance card" id="today-compliance-card" style="display:none;margin-top:0">
       <div class="compliance-ring">
         <svg width="56" height="56" viewBox="0 0 56 56">
           <circle cx="28" cy="28" r="22" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="5"/>
@@ -1531,9 +1600,12 @@ function renderStreakPill() {
   }).catch(() => {});
 }
 
+let entryPortions = {};  // current meal entry values
+
 function selectViewMeal(meal) {
   currentViewMeal = meal;
-  // Update tabs
+
+  // Update tab styles
   ['desayuno','comida','cena','colacion'].forEach(m => {
     const tab = document.getElementById(`itab-${m}`);
     const isDone = todayData && todayData.loggedMeals.includes(m);
@@ -1542,89 +1614,154 @@ function selectViewMeal(meal) {
     else tab.className = 'meal-tab';
   });
 
-  const plan = MEAL_PLAN[meal];
-  document.getElementById('view-meal-name').textContent = MEAL_LABELS[meal];
-  document.getElementById('view-meal-time').textContent = MEAL_TIMES[meal];
+  // Header
+  document.getElementById('entry-meal-name').textContent = MEAL_LABELS[meal];
+  document.getElementById('entry-meal-time').textContent = MEAL_TIMES[meal];
 
-  // Next meal tag
-  const tagWrap = document.getElementById('next-meal-tag-wrap');
-  if (todayData && meal === todayData.nextMeal) {
-    tagWrap.innerHTML = `<span class="next-meal-tag">⬆ Siguiente</span>`;
-  } else if (todayData && todayData.loggedMeals.includes(meal)) {
-    tagWrap.innerHTML = `<span class="next-meal-tag" style="background:var(--green-lt)">✅ Completado</span>`;
+  // Status badge
+  const badge = document.getElementById('entry-status-badge');
+  if (todayData?.nextMeal === 'completed') {
+    badge.textContent = '🏆 Completado';
+    badge.className = 'entry-status es-done';
+  } else if (todayData && meal === todayData.nextMeal) {
+    badge.textContent = '⬆ Siguiente';
+    badge.className = 'entry-status es-next';
+  } else if (todayData?.loggedMeals.includes(meal)) {
+    badge.textContent = '✅ Guardado';
+    badge.className = 'entry-status es-done';
+  } else if (meal === 'colacion') {
+    badge.textContent = 'Libre';
+    badge.className = 'entry-status es-locked';
   } else {
-    tagWrap.innerHTML = '';
+    badge.textContent = '🔒 Pendiente';
+    badge.className = 'entry-status es-locked';
   }
 
-  // Group grid
-  const grid = document.getElementById('group-grid');
+  // Seed entryPortions from already-logged data for this meal
+  const mealSummary = todayData?.mealSummary?.find(m => m.meal === meal);
+  const GROUPS = ['leche','carne','fruta','verdura','cereales','leguminosas','grasas'];
+  GROUPS.forEach(g => {
+    entryPortions[g] = mealSummary?.portions?.[g] || 0;
+  });
+
+  // Render entry rows
+  const list = document.getElementById('entry-list');
+  const plan  = MEAL_PLAN[meal];
+
   if (meal === 'colacion') {
-    grid.innerHTML = `
-      <div class="group-chip" style="grid-column:span 2">
-        ${GROUP_ICONS.fruta} <div class="group-chip-info">
-          <div class="group-chip-name">FRUTA (bajo IG)</div>
-          <div class="group-chip-count">Libre <span>sin límite</span></div>
-        </div>
-      </div>
-      <div class="group-chip" style="grid-column:span 2">
-        ${GROUP_ICONS.verdura} <div class="group-chip-info">
-          <div class="group-chip-name">VERDURA</div>
-          <div class="group-chip-count">Libre <span>sin límite</span></div>
-        </div>
+    list.innerHTML = `
+      <div class="entry-row" style="justify-content:center;padding:20px 16px;color:var(--muted);font-size:13px;text-align:center">
+        🍎 Fruta de bajo índice glucémico y/o verduras — sin límite
       </div>`;
   } else {
-    // Find consumed for this meal
-    const mealSummary = todayData.mealSummary?.find(m => m.meal === meal);
-    const consumed = mealSummary?.portions || {};
-    grid.innerHTML = Object.entries(plan)
-      .filter(([, qty]) => qty > 0)
-      .map(([group, qty]) => {
-        const got  = consumed[group] || 0;
-        const done = got >= qty;
-        const over = got > qty;
-        return `<div class="group-chip ${done ? 'done' : ''} ${over ? 'over' : ''}">
-          <span class="group-chip-icon">${GROUP_ICONS[group]}</span>
-          <div class="group-chip-info">
-            <div class="group-chip-name">${GROUP_LABELS[group].toUpperCase()}</div>
-            <div class="group-chip-count">${qty} <span>porciones</span></div>
-          </div>
-          <span class="group-chip-check">${done ? '✅' : ''}</span>
-        </div>`;
-      }).join('');
+    list.innerHTML = GROUPS
+      .filter(g => (plan[g] || 0) > 0)
+      .map(g => renderEntryRow(g, plan[g], entryPortions[g] || 0))
+      .join('');
   }
 
-  // Log button
-  const btn = document.getElementById('log-btn');
-  if (todayData && todayData.nextMeal === 'completed') {
-    btn.className = 'log-btn completed';
+  // Save button
+  renderSaveBtn(meal);
+
+  // Recipe hint
+  const recipeBtnWrap = document.getElementById('recipe-btn-wrap');
+  if (recipeBtnWrap && ['desayuno','comida','cena'].includes(meal)) {
+    recipeBtnWrap.innerHTML = `<button class="recipe-hint-btn" id="recipe-hint-btn" onclick="suggestRecipe('${meal}')">💡 Ver 3 recetas para ${MEAL_LABELS[meal]}</button>`;
+  } else if (recipeBtnWrap) {
+    recipeBtnWrap.innerHTML = '';
+  }
+}
+
+function renderEntryRow(group, plan, val) {
+  let rowCls = '', valCls = 'v-zero';
+  if (val > plan)     { rowCls = 'er-over'; valCls = 'v-over'; }
+  else if (val >= plan && val > 0) { rowCls = 'er-ok'; valCls = 'v-ok'; }
+  else if (val > 0)   { rowCls = 'er-low'; valCls = ''; }
+  return `<div class="entry-row ${rowCls}" id="erow-${group}">
+    <span class="er-icon">${GROUP_ICONS[group]}</span>
+    <div class="er-info">
+      <div class="er-name">${GROUP_LABELS[group]}</div>
+      <div class="er-plan">Meta: ${plan} porción${plan !== 1 ? 'es' : ''}</div>
+    </div>
+    <div class="er-stepper">
+      <button class="er-btn" onclick="adjustEntry('${group}',-1)" aria-label="Menos">−</button>
+      <div class="er-val ${valCls}" id="erval-${group}">${val}</div>
+      <button class="er-btn" onclick="adjustEntry('${group}',1)" aria-label="Más">+</button>
+    </div>
+  </div>`;
+}
+
+function adjustEntry(group, delta) {
+  entryPortions[group] = Math.max(0, (entryPortions[group] || 0) + delta);
+  const val  = entryPortions[group];
+  const plan = MEAL_PLAN[currentViewMeal]?.[group] || 0;
+  const valEl = document.getElementById(`erval-${group}`);
+  const rowEl = document.getElementById(`erow-${group}`);
+  if (!valEl || !rowEl) return;
+  valEl.textContent = val;
+  // Update classes
+  let rowCls = '', valCls = 'v-zero';
+  if (val > plan)                  { rowCls = 'er-over'; valCls = 'v-over'; }
+  else if (val >= plan && val > 0) { rowCls = 'er-ok';   valCls = 'v-ok';  }
+  else if (val > 0)                { rowCls = 'er-low';  valCls = '';       }
+  rowEl.className = `entry-row ${rowCls}`;
+  valEl.className = `er-val ${valCls}`;
+  renderSaveBtn(currentViewMeal);
+}
+
+function renderSaveBtn(meal) {
+  const btn  = document.getElementById('save-entry-btn');
+  const wrap = document.getElementById('save-entry-wrap');
+  if (!btn) return;
+  const isCompleted = todayData?.nextMeal === 'completed';
+  const isLogged    = todayData?.loggedMeals.includes(meal);
+  const isLocked    = PIPELINE.includes(meal) && meal !== todayData?.nextMeal && !isLogged;
+
+  if (isCompleted) {
+    btn.className = 'save-entry-btn se-completed';
     btn.innerHTML = '🏆 ¡Día completado!';
-    btn.onclick = null;
-  } else if (todayData && meal === todayData.nextMeal) {
-    btn.className = 'log-btn';
-    btn.innerHTML = `<span>➕</span> Registrar ${MEAL_LABELS[meal]}`;
-    btn.onclick = goToRegister;
+    wrap.style.display = '';
   } else if (meal === 'colacion') {
-    btn.className = 'log-btn';
-    btn.innerHTML = `<span>➕</span> Registrar Colación`;
-    btn.onclick = goToRegister;
-  } else {
-    btn.className = 'log-btn';
+    wrap.style.display = 'none';
+  } else if (isLocked) {
+    btn.className = 'save-entry-btn';
     btn.style.background = 'var(--bg2)';
     btn.style.color = 'var(--muted)';
-    btn.innerHTML = todayData?.loggedMeals.includes(meal)
-      ? '✅ Ya registrado'
-      : `🔒 Pendiente de orden`;
-    btn.onclick = null;
+    btn.style.boxShadow = 'none';
+    btn.style.pointerEvents = 'none';
+    btn.innerHTML = `🔒 Registra ${MEAL_LABELS[todayData?.nextMeal || 'desayuno']} primero`;
+    wrap.style.display = '';
+  } else {
+    btn.removeAttribute('style');
+    btn.className = isLogged ? 'save-entry-btn se-done' : 'save-entry-btn';
+    btn.innerHTML = isLogged
+      ? `✏️ Actualizar ${MEAL_LABELS[meal]}`
+      : `✅ Guardar ${MEAL_LABELS[meal]}`;
+    wrap.style.display = '';
   }
+}
 
-  // Recipe suggestion button
-  const recipeBtnWrap = document.getElementById('recipe-btn-wrap');
-  if (recipeBtnWrap) {
-    if (['desayuno','comida','cena'].includes(meal)) {
-      recipeBtnWrap.innerHTML = `<button class="recipe-hint-btn" id="recipe-hint-btn" onclick="suggestRecipe('${meal}')">💡 Ver 3 recetas para ${MEAL_LABELS[meal]}</button>`;
-    } else {
-      recipeBtnWrap.innerHTML = '';
-    }
+async function saveDirectEntry() {
+  const meal = currentViewMeal;
+  if (!meal || meal === 'colacion') return;
+  const isLocked = PIPELINE.includes(meal) && meal !== todayData?.nextMeal && !todayData?.loggedMeals.includes(meal);
+  if (isLocked) return;
+
+  const btn = document.getElementById('save-entry-btn');
+  btn.innerHTML = '<span class="spinner"></span> Guardando…';
+  btn.style.pointerEvents = 'none';
+
+  try {
+    await api('/api/logs/correct', {
+      method: 'POST',
+      body: JSON.stringify({ date: todayMX(), meal_type: meal, portions: { ...entryPortions } }),
+    });
+    showToast(`${MEAL_LABELS[meal]} guardado ✅`, 'success');
+    await loadTodayData();
+  } catch (err) {
+    showToast('Error: ' + err.message, 'error');
+    btn.style.pointerEvents = '';
+    renderSaveBtn(meal);
   }
 }
 
